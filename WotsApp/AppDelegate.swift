@@ -11,11 +11,23 @@ import UIKit
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-
-
   func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-    // Override point for customization after application launch.
+    registerForNotifications()
     return true
+  }
+
+  func application(_ application: UIApplication, your  launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+    // Override point for customization after application launch.
+    
+    return true
+  }
+  
+  //code 5
+  func application( _ application: UIApplication,
+                    didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+    let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
+    let token = tokenParts.joined()
+    print("Device Token: \n\(token)\n")
   }
 
   // MARK: UISceneSession Lifecycle
@@ -33,5 +45,29 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   }
 
 
+}
+
+extension AppDelegate: UNUserNotificationCenterDelegate {
+  
+  // code 1
+  func registerForNotifications() {
+    let center  = UNUserNotificationCenter.current()
+    center.delegate = self
+    center.requestAuthorization(options: [.sound, .alert, .badge]) { (granted, error) in
+      //          center.requestAuthorization(options: [.provisional]) { (granted, error) in
+      if error == nil{
+        DispatchQueue.main.async {
+          UIApplication.shared.registerForRemoteNotifications()
+        }
+      } else {
+        print("error ",error)
+      }
+    }
+  }
+  
+  // code 4
+  func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+  completionHandler([.alert, .badge, .sound])
+  }
 }
 

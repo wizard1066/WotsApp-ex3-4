@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -13,6 +13,9 @@
 		7BE45AA7240AD2D700D3FF68 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7BE45AA6240AD2D700D3FF68 /* Assets.xcassets */; };
 		7BE45AAA240AD2D700D3FF68 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7BE45AA9240AD2D700D3FF68 /* Preview Assets.xcassets */; };
 		7BE45AAD240AD2D700D3FF68 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7BE45AAB240AD2D700D3FF68 /* LaunchScreen.storyboard */; };
+		7BE45AB5240AD54E00D3FF68 /* LocalNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BE45AB4240AD54E00D3FF68 /* LocalNotifications.swift */; };
+		7BE45AB8240AE23E00D3FF68 /* RemoteNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BE45AB7240AE23E00D3FF68 /* RemoteNotifications.swift */; };
+		7BE45ABB240AE44F00D3FF68 /* SwiftJWT in Frameworks */ = {isa = PBXBuildFile; productRef = 7BE45ABA240AE44F00D3FF68 /* SwiftJWT */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +27,9 @@
 		7BE45AA9240AD2D700D3FF68 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		7BE45AAC240AD2D700D3FF68 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		7BE45AAE240AD2D700D3FF68 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		7BE45AB4240AD54E00D3FF68 /* LocalNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNotifications.swift; sourceTree = "<group>"; };
+		7BE45AB6240ADEF600D3FF68 /* WotsApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WotsApp.entitlements; sourceTree = "<group>"; };
+		7BE45AB7240AE23E00D3FF68 /* RemoteNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteNotifications.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -31,6 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7BE45ABB240AE44F00D3FF68 /* SwiftJWT in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -56,7 +63,10 @@
 		7BE45A9F240AD2CE00D3FF68 /* WotsApp */ = {
 			isa = PBXGroup;
 			children = (
+				7BE45AB6240ADEF600D3FF68 /* WotsApp.entitlements */,
 				7BE45AA0240AD2CE00D3FF68 /* AppDelegate.swift */,
+				7BE45AB7240AE23E00D3FF68 /* RemoteNotifications.swift */,
+				7BE45AB4240AD54E00D3FF68 /* LocalNotifications.swift */,
 				7BE45AA2240AD2CE00D3FF68 /* SceneDelegate.swift */,
 				7BE45AA4240AD2CE00D3FF68 /* ContentView.swift */,
 				7BE45AA6240AD2D700D3FF68 /* Assets.xcassets */,
@@ -91,6 +101,9 @@
 			dependencies = (
 			);
 			name = WotsApp;
+			packageProductDependencies = (
+				7BE45ABA240AE44F00D3FF68 /* SwiftJWT */,
+			);
 			productName = WotsApp;
 			productReference = 7BE45A9D240AD2CE00D3FF68 /* WotsApp.app */;
 			productType = "com.apple.product-type.application";
@@ -119,6 +132,9 @@
 				Base,
 			);
 			mainGroup = 7BE45A94240AD2CE00D3FF68;
+			packageReferences = (
+				7BE45AB9240AE44F00D3FF68 /* XCRemoteSwiftPackageReference "Swift-JWT" */,
+			);
 			productRefGroup = 7BE45A9E240AD2CE00D3FF68 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -146,6 +162,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7BE45AB8240AE23E00D3FF68 /* RemoteNotifications.swift in Sources */,
+				7BE45AB5240AD54E00D3FF68 /* LocalNotifications.swift in Sources */,
 				7BE45AA1240AD2CE00D3FF68 /* AppDelegate.swift in Sources */,
 				7BE45AA3240AD2CE00D3FF68 /* SceneDelegate.swift in Sources */,
 				7BE45AA5240AD2CE00D3FF68 /* ContentView.swift in Sources */,
@@ -284,6 +302,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = WotsApp/WotsApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"WotsApp/Preview Content\"";
 				DEVELOPMENT_TEAM = CWGS87U262;
@@ -304,6 +323,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = WotsApp/WotsApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"WotsApp/Preview Content\"";
 				DEVELOPMENT_TEAM = CWGS87U262;
@@ -342,6 +362,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		7BE45AB9240AE44F00D3FF68 /* XCRemoteSwiftPackageReference "Swift-JWT" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/IBM-Swift/Swift-JWT";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.6.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		7BE45ABA240AE44F00D3FF68 /* SwiftJWT */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7BE45AB9240AE44F00D3FF68 /* XCRemoteSwiftPackageReference "Swift-JWT" */;
+			productName = SwiftJWT;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 7BE45A95240AD2CE00D3FF68 /* Project object */;
 }

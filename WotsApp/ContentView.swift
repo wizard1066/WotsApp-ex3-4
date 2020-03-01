@@ -7,15 +7,27 @@
 //
 
 import SwiftUI
-
+// code 3 + code 9
+let notify = LocalNotifications()
+let remote = RemoteNotifications()
 struct ContentView: View {
-    var body: some View {
-        Text("Hello, World!")
+  var body: some View {
+    VStack {
+      Button(action: {
+        notify.doNotification()
+      }) {
+        Text("local")
+      }
+      Button(action: {
+        remote.postNotification()
+      }) {
+        Text("remote")
+      }
     }
+  }
 }
-
 struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-    }
+  static var previews: some View {
+    ContentView()
+  }
 }
