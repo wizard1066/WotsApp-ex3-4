@@ -8,6 +8,8 @@
 
 import UIKit
 
+var token: String!
+
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
@@ -26,7 +28,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   func application( _ application: UIApplication,
                     didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
     let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
-    let token = tokenParts.joined()
+    token = tokenParts.joined()
     print("Device Token: \n\(token)\n")
   }
 

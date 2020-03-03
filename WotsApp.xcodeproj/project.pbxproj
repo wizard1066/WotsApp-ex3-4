@@ -16,6 +16,7 @@
 		7BE45AB5240AD54E00D3FF68 /* LocalNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BE45AB4240AD54E00D3FF68 /* LocalNotifications.swift */; };
 		7BE45AB8240AE23E00D3FF68 /* RemoteNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BE45AB7240AE23E00D3FF68 /* RemoteNotifications.swift */; };
 		7BE45ABB240AE44F00D3FF68 /* SwiftJWT in Frameworks */ = {isa = PBXBuildFile; productRef = 7BE45ABA240AE44F00D3FF68 /* SwiftJWT */; };
+		7BE45AC0240D62C700D3FF68 /* Crypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BE45ABF240D62C700D3FF68 /* Crypto.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,7 @@
 		7BE45AB4240AD54E00D3FF68 /* LocalNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNotifications.swift; sourceTree = "<group>"; };
 		7BE45AB6240ADEF600D3FF68 /* WotsApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WotsApp.entitlements; sourceTree = "<group>"; };
 		7BE45AB7240AE23E00D3FF68 /* RemoteNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteNotifications.swift; sourceTree = "<group>"; };
+		7BE45ABF240D62C700D3FF68 /* Crypto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Crypto.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,6 +67,7 @@
 			children = (
 				7BE45AB6240ADEF600D3FF68 /* WotsApp.entitlements */,
 				7BE45AA0240AD2CE00D3FF68 /* AppDelegate.swift */,
+				7BE45ABF240D62C700D3FF68 /* Crypto.swift */,
 				7BE45AB7240AE23E00D3FF68 /* RemoteNotifications.swift */,
 				7BE45AB4240AD54E00D3FF68 /* LocalNotifications.swift */,
 				7BE45AA2240AD2CE00D3FF68 /* SceneDelegate.swift */,
@@ -166,6 +169,7 @@
 				7BE45AB5240AD54E00D3FF68 /* LocalNotifications.swift in Sources */,
 				7BE45AA1240AD2CE00D3FF68 /* AppDelegate.swift in Sources */,
 				7BE45AA3240AD2CE00D3FF68 /* SceneDelegate.swift in Sources */,
+				7BE45AC0240D62C700D3FF68 /* Crypto.swift in Sources */,
 				7BE45AA5240AD2CE00D3FF68 /* ContentView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

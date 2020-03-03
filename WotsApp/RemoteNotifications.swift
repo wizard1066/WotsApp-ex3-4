@@ -19,13 +19,26 @@ class RemoteNotifications: NSObject, URLSessionDelegate {
     Q1hW/WrX
     -----END PRIVATE KEY-----
     """
-  private var token = "56f9fe2141d0ada7b38f4fea3b622c67f6cdee7df01deb2895f63a3ddd1f360b"
+//  private var token = "56f9fe2141d0ada7b38f4fea3b622c67f6cdee7df01deb2895f63a3ddd1f360b"
   
-  private var jsonObject: [String: Any] = ["aps":["badge":2,"category":"mycategory","alert":["title":"JSON What","body":"You must be kidding"]]]
+  private typealias jsonBlob = [String:Any]
+  private var jsonObjects:[jsonBlob] = []
   
-  func postNotification() {
+  
+  override init () {
+    jsonObjects.append(["aps":["badge":1,"category":"mycategory","alert":["title":"JSON What","body":"You must be kidding"]]])
+    jsonObjects.append(["aps":["content-available":1],"user":"red"])
+  }
+  
+  func saveMessage(message:String, title:String) -> Int {
+    jsonObjects.append(["aps":["badge":1,"category":"mycategory","alert":["title":title,"body":message],"mutable-content":1]])
+    return(jsonObjects.count - 1)
+  }
+//  private var jsonObjects: [jsonBlob] = [["aps":["badge":2,"category":"mycategory","alert":["title":"JSON What","body":"You must be kidding"]]]]
+  
+  func postNotification(type: String, jsonID: Int, token:String) {
     // code 9
-    let valid = JSONSerialization.isValidJSONObject(jsonObject)
+    let valid = JSONSerialization.isValidJSONObject(jsonObjects[jsonID])
     print("valid ",valid)
     if !valid {
       return
@@ -49,14 +62,14 @@ class RemoteNotifications: NSObject, URLSessionDelegate {
       loginRequest.allHTTPHeaderFields = ["apns-topic": "ch.cqd.WotsApp",
                                           "content-type": "application/json",
                                           "apns-priority": "10",
-                                          "apns-push-type": "alert",
+                                          "apns-push-type": type,
                                           "authorization":"bearer " + jwtString]
       // code 12
       let session = URLSession(configuration: .default, delegate: self, delegateQueue: OperationQueue.main)
       
       loginRequest.httpMethod = "POST"
       
-      let data = try? JSONSerialization.data(withJSONObject: jsonObject, options:[])
+      let data = try? JSONSerialization.data(withJSONObject: jsonObjects[jsonID], options:[])
       
       loginRequest.httpBody = data
       let loginTask = session.dataTask(with: loginRequest) { data, response, error in
@@ -70,11 +83,12 @@ class RemoteNotifications: NSObject, URLSessionDelegate {
         }
       }
       loginTask.resume()
-      print("apns ",jsonObject)
+      print("apns ",jsonObjects[jsonID])
     } catch {
       print("failed to encode")
     }
   }
 }
+
 
 
