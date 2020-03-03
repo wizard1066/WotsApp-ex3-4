@@ -145,30 +145,30 @@ class Crypto: NSObject {
   // code 8
   
   func putPublicKey(publicK:Data, keySize: UInt, publicTag: String) {
-  //    let secKeyData : NSData = NSData(base64Encoded: publicK, options: .ignoreUnknownCharacters)!
-      let attributes: [String:Any] = [
-                  kSecAttrKeyClass as String: kSecAttrKeyClassPublic,
-                  kSecAttrKeyType as String: kSecAttrKeyTypeRSA,
-                  kSecAttrKeySizeInBits as String: keySize,
-                  kSecAttrIsPermanent as String: true as AnyObject,
-                  kSecAttrApplicationTag as String: publicTag as AnyObject
-                  ]
-      self.publicKey = SecKeyCreateWithData(publicK as CFData, attributes as CFDictionary, nil)
-      print("putpublickey ",self.publicKey)
-    }
-    
-    func putPrivateKey(privateK:Data, keySize: UInt, privateTag: String) {
     //    let secKeyData : NSData = NSData(base64Encoded: publicK, options: .ignoreUnknownCharacters)!
-        let attributes: [String:Any] = [
-                    kSecAttrKeyClass as String: kSecAttrKeyClassPrivate,
-                    kSecAttrKeyType as String: kSecAttrKeyTypeRSA,
-                    kSecAttrKeySizeInBits as String: keySize,
-                    kSecAttrIsPermanent as String: true as AnyObject,
-                    kSecAttrApplicationTag as String: privateTag as AnyObject
-                    ]
-        self.privateKey = SecKeyCreateWithData(privateK as CFData, attributes as CFDictionary, nil)
-        print("putprivatekey ",self.privateKey)
-      }
+    let attributes: [String:Any] = [
+      kSecAttrKeyClass as String: kSecAttrKeyClassPublic,
+      kSecAttrKeyType as String: kSecAttrKeyTypeRSA,
+      kSecAttrKeySizeInBits as String: keySize,
+      kSecAttrIsPermanent as String: true as AnyObject,
+      kSecAttrApplicationTag as String: publicTag as AnyObject
+    ]
+    self.publicKey = SecKeyCreateWithData(publicK as CFData, attributes as CFDictionary, nil)
+    print("putpublickey ",self.publicKey)
+  }
+  
+  func putPrivateKey(privateK:Data, keySize: UInt, privateTag: String) {
+    //    let secKeyData : NSData = NSData(base64Encoded: publicK, options: .ignoreUnknownCharacters)!
+    let attributes: [String:Any] = [
+      kSecAttrKeyClass as String: kSecAttrKeyClassPrivate,
+      kSecAttrKeyType as String: kSecAttrKeyTypeRSA,
+      kSecAttrKeySizeInBits as String: keySize,
+      kSecAttrIsPermanent as String: true as AnyObject,
+      kSecAttrApplicationTag as String: privateTag as AnyObject
+    ]
+    self.privateKey = SecKeyCreateWithData(privateK as CFData, attributes as CFDictionary, nil)
+    print("putprivatekey ",self.privateKey)
+  }
   
 }
 

@@ -32,10 +32,8 @@ class RemoteNotifications: NSObject, URLSessionDelegate {
   
   func saveMessage(message:String, title:String) -> Int {
     jsonObjects.append(["aps":["badge":1,"category":"mycategory","alert":["title":title,"body":message],"mutable-content":true]])
-//    jsonObjects.append(["aps":["badge":1,"category":"mycategory","alert":["title":title,"body":message]]])
     return(jsonObjects.count - 1)
   }
-//  private var jsonObjects: [jsonBlob] = [["aps":["badge":2,"category":"mycategory","alert":["title":"JSON What","body":"You must be kidding"]]]]
   
   func postNotification(type: String, jsonID: Int, token:String) {
     // code 9
