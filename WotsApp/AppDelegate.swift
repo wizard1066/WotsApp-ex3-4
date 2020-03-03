@@ -31,6 +31,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     token = tokenParts.joined()
     print("Device Token: \n\(token)\n")
   }
+  
+  // code 11
+  
+  func application( _ application: UIApplication,
+                 didReceiveRemoteNotification userInfo: [AnyHashable : Any],
+                 fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+    debugPrint("Received: \(userInfo)")
+    completionHandler(.newData)
+  }
 
   // MARK: UISceneSession Lifecycle
 
