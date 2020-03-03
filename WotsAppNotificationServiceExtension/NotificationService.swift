@@ -22,14 +22,13 @@ class NotificationService: UNNotificationServiceExtension {
         if let bestAttemptContent = bestAttemptContent {
             // Modify the notification content here...
             
+  // code 16
             let defaults = UserDefaults.init(suiteName: "group.ch.cqd.WotsApp")
             let localK = defaults?.object(forKey: "privateK") as? String
           
             putPrivateKey64(privateK: localK!, keySize: 2048, privateTag: "ch.cqd.WotsApp")
-//            putPrivateKey(privateK: localK!, keySize: 2048, privateTag: "ch.cqd.WotsApp")
-//            let secKeyData : NSData = NSData(base64Encoded: localK!, options: .ignoreUnknownCharacters)!
             
-            bestAttemptContent.title = "\(bestAttemptContent.title) [modified]"
+            bestAttemptContent.title = "\(bestAttemptContent.title) [excrypted]"
             bestAttemptContent.body = decpryptBase64(encrpted: bestAttemptContent.body)!
             contentHandler(bestAttemptContent)
         }

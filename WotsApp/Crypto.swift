@@ -32,9 +32,8 @@ class Crypto: NSObject {
     
     let status : OSStatus = SecKeyGeneratePair(parameters as CFDictionary, &(self.publicKey), &(self.privateKey))
     
+    // code 15
     let localK = getPrivateKey64() as Any
-    print("localK ",localK)
-//    UserDefaults.standard.set(localK!, forKey: "privateK")
     let defaults = UserDefaults.init(suiteName: "group.ch.cqd.WotsApp")
     defaults?.set(localK, forKey: "privateK")
     
