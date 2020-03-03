@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7BBD1C05240E952700D8CDBA /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBD1BF6240E723E00D8CDBA /* NotificationService.swift */; };
+		7BBD1C06240E958700D8CDBA /* WotsAppNotificationServiceExtension.appex in Resources */ = {isa = PBXBuildFile; fileRef = 7BBD1BF4240E723E00D8CDBA /* WotsAppNotificationServiceExtension.appex */; };
+		7BBD1C09240E996100D8CDBA /* WotsAppNotificationServiceExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 7BBD1BF4240E723E00D8CDBA /* WotsAppNotificationServiceExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		7BE45AA1240AD2CE00D3FF68 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BE45AA0240AD2CE00D3FF68 /* AppDelegate.swift */; };
 		7BE45AA3240AD2CE00D3FF68 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BE45AA2240AD2CE00D3FF68 /* SceneDelegate.swift */; };
 		7BE45AA5240AD2CE00D3FF68 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BE45AA4240AD2CE00D3FF68 /* ContentView.swift */; };
@@ -19,7 +22,42 @@
 		7BE45AC0240D62C700D3FF68 /* Crypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BE45ABF240D62C700D3FF68 /* Crypto.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		7BBD1BF9240E723E00D8CDBA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7BE45A95240AD2CE00D3FF68 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7BBD1BF3240E723E00D8CDBA;
+			remoteInfo = WotsAppNotificationServiceExtension;
+		};
+		7BBD1C0A240E996100D8CDBA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7BE45A95240AD2CE00D3FF68 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7BBD1BF3240E723E00D8CDBA;
+			remoteInfo = WotsAppNotificationServiceExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		7BBD1BFC240E723E00D8CDBA /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				7BBD1C09240E996100D8CDBA /* WotsAppNotificationServiceExtension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		7BBD1BF4240E723E00D8CDBA /* WotsAppNotificationServiceExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WotsAppNotificationServiceExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		7BBD1BF6240E723E00D8CDBA /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		7BBD1BF8240E723E00D8CDBA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		7BBD1C0C240EA19800D8CDBA /* WotsAppNotificationServiceExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WotsAppNotificationServiceExtension.entitlements; sourceTree = "<group>"; };
 		7BE45A9D240AD2CE00D3FF68 /* WotsApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WotsApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7BE45AA0240AD2CE00D3FF68 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7BE45AA2240AD2CE00D3FF68 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -35,6 +73,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		7BBD1BF1240E723E00D8CDBA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		7BE45A9A240AD2CE00D3FF68 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -46,11 +91,30 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		7BBD1BF5240E723E00D8CDBA /* WotsAppNotificationServiceExtension */ = {
+			isa = PBXGroup;
+			children = (
+				7BBD1C0C240EA19800D8CDBA /* WotsAppNotificationServiceExtension.entitlements */,
+				7BBD1BF6240E723E00D8CDBA /* NotificationService.swift */,
+				7BBD1BF8240E723E00D8CDBA /* Info.plist */,
+			);
+			path = WotsAppNotificationServiceExtension;
+			sourceTree = "<group>";
+		};
+		7BBD1C08240E996100D8CDBA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		7BE45A94240AD2CE00D3FF68 = {
 			isa = PBXGroup;
 			children = (
 				7BE45A9F240AD2CE00D3FF68 /* WotsApp */,
+				7BBD1BF5240E723E00D8CDBA /* WotsAppNotificationServiceExtension */,
 				7BE45A9E240AD2CE00D3FF68 /* Products */,
+				7BBD1C08240E996100D8CDBA /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -58,6 +122,7 @@
 			isa = PBXGroup;
 			children = (
 				7BE45A9D240AD2CE00D3FF68 /* WotsApp.app */,
+				7BBD1BF4240E723E00D8CDBA /* WotsAppNotificationServiceExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -91,6 +156,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		7BBD1BF3240E723E00D8CDBA /* WotsAppNotificationServiceExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7BBD1BFF240E723E00D8CDBA /* Build configuration list for PBXNativeTarget "WotsAppNotificationServiceExtension" */;
+			buildPhases = (
+				7BBD1BF0240E723E00D8CDBA /* Sources */,
+				7BBD1BF1240E723E00D8CDBA /* Frameworks */,
+				7BBD1BF2240E723E00D8CDBA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = WotsAppNotificationServiceExtension;
+			productName = WotsAppNotificationServiceExtension;
+			productReference = 7BBD1BF4240E723E00D8CDBA /* WotsAppNotificationServiceExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		7BE45A9C240AD2CE00D3FF68 /* WotsApp */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 7BE45AB1240AD2D700D3FF68 /* Build configuration list for PBXNativeTarget "WotsApp" */;
@@ -98,10 +180,13 @@
 				7BE45A99240AD2CE00D3FF68 /* Sources */,
 				7BE45A9A240AD2CE00D3FF68 /* Frameworks */,
 				7BE45A9B240AD2CE00D3FF68 /* Resources */,
+				7BBD1BFC240E723E00D8CDBA /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				7BBD1BFA240E723E00D8CDBA /* PBXTargetDependency */,
+				7BBD1C0B240E996100D8CDBA /* PBXTargetDependency */,
 			);
 			name = WotsApp;
 			packageProductDependencies = (
@@ -121,6 +206,9 @@
 				LastUpgradeCheck = 1130;
 				ORGANIZATIONNAME = "Mark Lucking";
 				TargetAttributes = {
+					7BBD1BF3240E723E00D8CDBA = {
+						CreatedOnToolsVersion = 11.3.1;
+					};
 					7BE45A9C240AD2CE00D3FF68 = {
 						CreatedOnToolsVersion = 11.3.1;
 					};
@@ -143,15 +231,24 @@
 			projectRoot = "";
 			targets = (
 				7BE45A9C240AD2CE00D3FF68 /* WotsApp */,
+				7BBD1BF3240E723E00D8CDBA /* WotsAppNotificationServiceExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		7BBD1BF2240E723E00D8CDBA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		7BE45A9B240AD2CE00D3FF68 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7BBD1C06240E958700D8CDBA /* WotsAppNotificationServiceExtension.appex in Resources */,
 				7BE45AAD240AD2D700D3FF68 /* LaunchScreen.storyboard in Resources */,
 				7BE45AAA240AD2D700D3FF68 /* Preview Assets.xcassets in Resources */,
 				7BE45AA7240AD2D700D3FF68 /* Assets.xcassets in Resources */,
@@ -161,6 +258,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		7BBD1BF0240E723E00D8CDBA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7BBD1C05240E952700D8CDBA /* NotificationService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		7BE45A99240AD2CE00D3FF68 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -176,6 +281,19 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		7BBD1BFA240E723E00D8CDBA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7BBD1BF3240E723E00D8CDBA /* WotsAppNotificationServiceExtension */;
+			targetProxy = 7BBD1BF9240E723E00D8CDBA /* PBXContainerItemProxy */;
+		};
+		7BBD1C0B240E996100D8CDBA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7BBD1BF3240E723E00D8CDBA /* WotsAppNotificationServiceExtension */;
+			targetProxy = 7BBD1C0A240E996100D8CDBA /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin PBXVariantGroup section */
 		7BE45AAB240AD2D700D3FF68 /* LaunchScreen.storyboard */ = {
 			isa = PBXVariantGroup;
@@ -188,6 +306,48 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		7BBD1BFD240E723E00D8CDBA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = WotsAppNotificationServiceExtension/WotsAppNotificationServiceExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = CWGS87U262;
+				INFOPLIST_FILE = WotsAppNotificationServiceExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = ch.cqd.WotsApp.WotsAppNotificationServiceExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		7BBD1BFE240E723E00D8CDBA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = WotsAppNotificationServiceExtension/WotsAppNotificationServiceExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = CWGS87U262;
+				INFOPLIST_FILE = WotsAppNotificationServiceExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = ch.cqd.WotsApp.WotsAppNotificationServiceExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		7BE45AAF240AD2D700D3FF68 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -305,6 +465,7 @@
 		7BE45AB2240AD2D700D3FF68 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = WotsApp/WotsApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
@@ -312,6 +473,7 @@
 				DEVELOPMENT_TEAM = CWGS87U262;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = WotsApp/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -326,6 +488,7 @@
 		7BE45AB3240AD2D700D3FF68 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = WotsApp/WotsApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
@@ -333,6 +496,7 @@
 				DEVELOPMENT_TEAM = CWGS87U262;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = WotsApp/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -347,6 +511,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		7BBD1BFF240E723E00D8CDBA /* Build configuration list for PBXNativeTarget "WotsAppNotificationServiceExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7BBD1BFD240E723E00D8CDBA /* Debug */,
+				7BBD1BFE240E723E00D8CDBA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		7BE45A98240AD2CE00D3FF68 /* Build configuration list for PBXProject "WotsApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
