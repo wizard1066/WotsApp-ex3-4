@@ -54,12 +54,14 @@ struct ContentView: View {
       
       // path for a new user
       if display2 {
+        Spacer()
         TextField("NickName?", text: $nickName)
           .multilineTextAlignment(.center)
           .textFieldStyle(RoundedBorderTextFieldStyle())
         TextField("Secret?", text: $secret)
           .multilineTextAlignment(.center)
           .textFieldStyle(RoundedBorderTextFieldStyle())
+        Spacer()
         Button(action: {
           let success = crypto.generateKeyPair(keySize: 2048, privateTag: "ch.cqd.WotsApp", publicTag: "ch.cqd.WotsApp")
           if success {
@@ -79,6 +81,7 @@ struct ContentView: View {
         }.alert(isPresented: $showAlert1) { () -> Alert in
           Alert(title: Text("Saved"), message: Text("Saved"), dismissButton: .default(Text("Ok")))
         }
+        Spacer()
       }
       
       
