@@ -26,9 +26,10 @@ struct ContentView: View {
   @State var nickName = ""
   @State var secret = ""
   @State var showAlert1 = false
+  @State var showAlert2 = false
   
   var body: some View {
-    VStack {
+    VStack(alignment: .center) {
       // path as you start the app
       Text("WotsApp")
       .onTapGesture {
@@ -55,12 +56,14 @@ struct ContentView: View {
       // path for a new user
       if display2 {
         Spacer()
+        
         TextField("NickName?", text: $nickName)
           .multilineTextAlignment(.center)
           .textFieldStyle(RoundedBorderTextFieldStyle())
         TextField("Secret?", text: $secret)
           .multilineTextAlignment(.center)
           .textFieldStyle(RoundedBorderTextFieldStyle())
+        Spacer()
         Spacer()
         Button(action: {
           let success = crypto.generateKeyPair(keySize: 2048, privateTag: "ch.cqd.WotsApp", publicTag: "ch.cqd.WotsApp")
@@ -74,16 +77,13 @@ struct ContentView: View {
           Image(systemName: "icloud.and.arrow.up")
         }.onReceive(cloud.savedPublisher) { ( success ) in
           if success! {
-            self.showAlert1 = true
-            self.display1 = true
+            self.showAlert2 = true
             self.display2 = false
+            self.display1 = true
           }
-        }.alert(isPresented: $showAlert1) { () -> Alert in
-          Alert(title: Text("Saved"), message: Text("Saved"), dismissButton: .default(Text("Ok")))
         }
         Spacer()
       }
-      
       
       // path for an existing user
       if self.display1 {
@@ -93,6 +93,9 @@ struct ContentView: View {
           }
         }.pickerStyle(WheelPickerStyle())
           .padding()
+          .alert(isPresented:$showAlert2) {
+            Alert(title: Text("New User"), message: Text("Saved"), dismissButton: .default(Text("Ok")))
+          }
       }
     }
   }
@@ -148,20 +151,22 @@ struct ContentView: View {
 //    }
 //  }
 //}
-
+#if DEBUG
 struct ContentView_Previews: PreviewProvider {
   static var previews: some View {
     ContentView()
   }
 }
+#endif
 
-extension Binding {
-  func onChange(_ handler: @escaping (Value) -> Void) -> Binding<Value> {
-    return Binding(
-      get: { self.wrappedValue },
-      set: { selection in
-        self.wrappedValue = selection
-        handler(selection)
-    })
-  }
-}
+
+//extension Binding {
+//  func onChange(_ handler: @escaping (Value) -> Void) -> Binding<Value> {
+//    return Binding(
+//      get: { self.wrappedValue },
+//      set: { selection in
+//        self.wrappedValue = selection
+//        handler(selection)
+//    })
+//  }
+//}

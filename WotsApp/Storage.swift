@@ -140,16 +140,23 @@ class Storage: NSObject {
                    }))
     }
     
-    var saver:Int = 0 {
+    var door1:Bool = false {
       didSet {
-        if saver == 2 {
+        if door2 {
           DispatchQueue.main.async() { self.savedPublisher.send(true) }
         }
       }
     }
+    
+    var door2:Bool = false {
+      didSet {
+        if door1 {
+          DispatchQueue.main.async() { self.savedPublisher.send(true) }
+        }
+      }
+  }
   
     func saveRex(user: rex) {
-      saver = 0
       saveToPublic(user: user)
       saveToPrivate(user: user)
     }
@@ -166,7 +173,7 @@ class Storage: NSObject {
         if error != nil {
           DispatchQueue.main.async() { errorPublisher.send(error?.localizedDescription) }
         } else {
-          self.saver = self.saver + 1
+          self.door1 = true
         }
       }
       publicDB.add(saveRecordsOperation)
@@ -186,7 +193,7 @@ class Storage: NSObject {
         if error != nil {
           DispatchQueue.main.async() { errorPublisher.send(error?.localizedDescription) }
         } else {
-          self.saver = self.saver + 1
+          self.door2 = true
         }
       }
       privateDB.add(saveRecordsOperation)
