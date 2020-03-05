@@ -12,6 +12,7 @@ import SwiftUI
 let poster = RemoteNotifications()
 let crypto = Crypto()
 let cloud = Storage()
+let images = ["mouse","bull","tiger","rabit","dragon","snake","horse","ram","monkey","roster","dog","bull"]
 
 class nouvelleUsers: ObservableObject {
   var rexes:[rex] = []
@@ -27,6 +28,9 @@ struct ContentView: View {
   @State var secret = ""
   @State var showAlert1 = false
   @State var showAlert2 = false
+  @State var index = 0
+  @State var image = UIImage(imageLiteralResourceName: "dog")
+  @State var message = ""
   
   var body: some View {
     VStack(alignment: .center) {
@@ -39,7 +43,12 @@ struct ContentView: View {
       }
       .onReceive(cloud.searchPriPublisher) { (data) in
         if data != nil {
-          self.user = data
+          self.user = data!
+          self.image = UIImage(data: self.user!.image!)!
+          self.nickName = self.user!.nickName!
+          self.secret = self.user!.secret!
+          crypto.putPublicKey(publicK: self.user!.publicK!, keySize: 2048, publicTag: "ch.cqd.WotsApp")
+          crypto.putPrivateKey(privateK: self.user!.privateK!, keySize: 2048, privateTag: "ch.cqd.WotsApp")
           cloud.getPublicDirectory()
         } else {
           self.display2 = true
@@ -63,6 +72,13 @@ struct ContentView: View {
         TextField("Secret?", text: $secret)
           .multilineTextAlignment(.center)
           .textFieldStyle(RoundedBorderTextFieldStyle())
+        Image(images[index])
+          .resizable()
+          .frame(width: 128.0, height: 128.0)
+          .onTapGesture {
+          self.index = (self.index + 1) % images.count
+        }.animation(.default)
+        Text("Tap image to change it").font(.system(size: 12))
         Spacer()
         Spacer()
         Button(action: {
@@ -70,11 +86,16 @@ struct ContentView: View {
           if success {
             let privateK = crypto.getPrivateKey()
             let publicK = crypto.getPublicKey()
-            let newRex = rex(id: nil, token: token, nickName: self.nickName, icon: nil, secret: self.secret, publicK: publicK, privateK: privateK)
+            self.image = UIImage(named: images[self.index])!
+            let imagePNG = self.image.pngData()!
+            let newRex = rex(id: nil, token: token, nickName: self.nickName, image: imagePNG, secret: self.secret, publicK: publicK, privateK: privateK)
+            
             cloud.saveRex(user: newRex)
           }
         }) {
           Image(systemName: "icloud.and.arrow.up")
+          .resizable()
+          .frame(width: 48.0, height: 48.0)
         }.onReceive(cloud.savedPublisher) { ( success ) in
           if success! {
             self.showAlert2 = true
@@ -87,6 +108,15 @@ struct ContentView: View {
       
       // path for an existing user
       if self.display1 {
+        Text(nickName)
+        Image(uiImage: image)
+          .resizable()
+          .frame(width: 128.0, height: 128.0)
+        Text(secret)
+        TextField("Message?", text: $message)
+        .multilineTextAlignment(.center)
+        .textFieldStyle(RoundedBorderTextFieldStyle())
+        Spacer()
         Picker(selection: $selected, label: Text("")) {
           ForEach(0 ..< self.nouvelle.rexes.count) {dix in
             Text(self.nouvelle.rexes[dix].nickName!)
@@ -96,6 +126,7 @@ struct ContentView: View {
           .alert(isPresented:$showAlert2) {
             Alert(title: Text("New User"), message: Text("Saved"), dismissButton: .default(Text("Ok")))
           }
+          
       }
     }
   }

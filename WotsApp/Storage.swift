@@ -28,16 +28,16 @@ struct rex {
   var id: CKRecord.ID?
   var token: String?
   var nickName: String?
-  var icon: Data?
+  var image: Data?
   var secret: String?
   var privateK: Data?
   var publicK: Data?
   
-  init(id: CKRecord.ID?, token: String?, nickName: String?, icon: Data?, secret: String?, publicK: Data?, privateK: Data?) {
+  init(id: CKRecord.ID?, token: String?, nickName: String?, image: Data?, secret: String?, publicK: Data?, privateK: Data?) {
     self.id = id
     self.token = token
     self.nickName = nickName
-    self.icon = icon
+    self.image = image
     self.secret = secret
     self.publicK = publicK
     self.privateK = privateK
@@ -90,7 +90,7 @@ class Storage: NSObject {
                       if results.count == 0 {
                         DispatchQueue.main.async { searchPubPublisher.send(nil) }
                       } else {
-                        let newRex = rex(id: nil, token: nil, nickName: nil, icon: nil, secret: nil, publicK: nil, privateK: nil)
+                        let newRex = rex(id: nil, token: nil, nickName: nil, image: nil, secret: nil, publicK: nil, privateK: nil)
                         DispatchQueue.main.async { searchPubPublisher.send(newRex) }
                       }
     }
@@ -110,7 +110,15 @@ class Storage: NSObject {
                       if results.count == 0 {
                         DispatchQueue.main.async { self!.searchPriPublisher.send(nil) }
                       } else {
-                        let newRex = rex(id: nil, token: nil, nickName: nil, icon: nil, secret: nil, publicK: nil, privateK: nil)
+                        // Assuming we tokens are unique, which I believe they should be
+                        let record = results.first!
+                        let name = record.object(forKey: "nickName") as? String
+                        let secret = record.object(forKey: "secret") as? String
+                        let publicK = record.object(forKey: "publicK") as? Data
+                        let privateK = record.object(forKey: "privateK") as? Data
+                        let token = record.object(forKey: "token") as? String
+                        let image = record.object(forKey: "image") as? Data
+                        let newRex = rex(id: record.recordID, token: token, nickName: name, image: image, secret: secret, publicK: publicK, privateK: privateK)
                         DispatchQueue.main.async { self!.searchPriPublisher.send(newRex) }
                       }
     }
@@ -130,7 +138,7 @@ class Storage: NSObject {
                         let name = record!.object(forKey: "nickName") as? String
                         let secret = record!.object(forKey: "secret") as? String
                         let recordID = record!.recordID
-                        let newRex = rex(id: recordID, token: nil, nickName: name, icon: nil, secret: secret, publicK: nil, privateK: nil)
+                        let newRex = rex(id: recordID, token: nil, nickName: name, image: nil, secret: secret, publicK: nil, privateK: nil)
                         self.users!.rexes.append(newRex)
                         DispatchQueue.main.async() { fetchPublisher.send(true) }
                       } else {
@@ -186,6 +194,7 @@ class Storage: NSObject {
       record.setValue(user.token, forKey: "token")
       record.setValue(user.privateK, forKey: "privateK")
       record.setValue(user.secret, forKey: "secret")
+      record.setValue(user.image, forKey: "image")
       let saveRecordsOperation = CKModifyRecordsOperation()
       saveRecordsOperation.recordsToSave = [record]
       saveRecordsOperation.savePolicy = .allKeys
@@ -216,7 +225,7 @@ class Storage: NSObject {
                           let publicK = result.object(forKey: "publicK") as? Data
                           let token = result.object(forKey: "token") as? String
                           let recordID = result.recordID
-                          let newRex = rex(id: recordID, token: token, nickName: name, icon: nil, secret: secret, publicK: publicK, privateK: nil)
+                          let newRex = rex(id: recordID, token: token, nickName: name, image: nil, secret: secret, publicK: publicK, privateK: nil)
                           self!.users!.rexes.append(newRex)
                         }
                         DispatchQueue.main.async() { self!.gotPublicDirectory.send(true) }
@@ -240,9 +249,9 @@ class Storage: NSObject {
                           let privateK = result.object(forKey: "privateK") as? Data
                           let publicK = result.object(forKey: "publicK") as? Data
                           let token = result.object(forKey: "token") as? String
-                          let icon = result.object(forKey: "icon") as? Data
+                          let image = result.object(forKey: "image") as? Data
                           let recordID = result.recordID
-                          let newRex = rex(id: recordID, token: token, nickName: name, icon: icon, secret: secret, publicK: publicK, privateK: privateK)
+                          let newRex = rex(id: recordID, token: token, nickName: name, image: image, secret: secret, publicK: publicK, privateK: privateK)
                           self!.users!.rexes.append(newRex)
                         }
       }
