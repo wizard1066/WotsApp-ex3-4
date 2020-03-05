@@ -7,7 +7,7 @@
 //
 
 import SwiftUI
-// code 6
+// code 7
 
 let poster = RemoteNotifications()
 let crypto = Crypto()
@@ -18,6 +18,8 @@ class nouvelleUsers: ObservableObject {
   var rexes:[rex] = []
 }
 
+// code 8
+
 struct ContentView: View {
   @State var user: rex?
   @State var nouvelle = nouvelleUsers()
@@ -26,11 +28,12 @@ struct ContentView: View {
   @State var display2 = false
   @State var nickName = ""
   @State var secret = ""
-  @State var showAlert1 = false
   @State var showAlert2 = false
   @State var index = 0
   @State var image = UIImage(imageLiteralResourceName: "dog")
   @State var message = ""
+  
+  // code 9
   
   var body: some View {
     VStack(alignment: .center) {
@@ -49,7 +52,6 @@ struct ContentView: View {
           self.secret = self.user!.secret!
           crypto.putPublicKey(publicK: self.user!.publicK!, keySize: 2048, publicTag: "ch.cqd.WotsApp")
           crypto.putPrivateKey(privateK: self.user!.privateK!, keySize: 2048, privateTag: "ch.cqd.WotsApp")
-          cloud.getPublicDirectory()
         } else {
           self.display2 = true
         }
@@ -62,6 +64,7 @@ struct ContentView: View {
         }
       }
       
+      // code 10
       // path for a new user
       if display2 {
         Spacer()
@@ -106,6 +109,7 @@ struct ContentView: View {
         Spacer()
       }
       
+      // code 11
       // path for an existing user
       if self.display1 {
         Text(nickName)
