@@ -7,7 +7,10 @@
 //
 
 import SwiftUI
+import Combine
 // code 7
+
+let loadingPubPublisher = PassthroughSubject<String, Never>()
 
 let poster = RemoteNotifications()
 let crypto = Crypto()
@@ -37,19 +40,23 @@ struct ContentView: View {
   @State var publicK:Data!
   @State var privateK:Data!
   @State var doubleToken:String!
+  @State var loading = "WotsApp"
   
   // code 9
   
   var body: some View {
     VStack(alignment: .center) {
       // path as you start the app
-      Text("WotsApp")
+      Text(loading)
       .onTapGesture {
         if token != nil {
           print("ok")
           cloud.searchPrivate(token)
         }
-      }.onReceive(cloud.searchPriPublisher) { (data) in
+      }.onReceive(loadingPubPublisher, perform: { ( info ) in
+        self.loading = info
+      })
+      .onReceive(cloud.searchPriPublisher) { (data) in
         if data != nil {
           self.user = data!
           self.image = UIImage(data: self.user!.image!)!
@@ -129,10 +136,10 @@ struct ContentView: View {
         Text("Sender: " + nickName)
         Text("Sending: " + sendTo)
         TextField("Message?", text: $message, onCommit: {
-          if self.doubleToken == token {
-            crypto.putPrivateKey(privateK: self.privateK, keySize: 2048, privateTag: "ch.cqd.WotsApp")
-            crypto.savePrivateKey()
-          }
+//          if self.doubleToken == token {
+//            crypto.putPrivateKey(privateK: self.privateK, keySize: 2048, privateTag: "ch.cqd.WotsApp")
+//            crypto.savePrivateKey()
+//          }
           crypto.putPublicKey(publicK: self.publicK, keySize: 2048, publicTag: "ch.cqd.WotsApp")
           let crypted = crypto.encryptBase64(text: self.message)
           let index = poster.saveMessage(message: crypted, title: self.nickName)
@@ -156,7 +163,6 @@ struct ContentView: View {
           .alert(isPresented:$showAlert2) {
             Alert(title: Text("New User"), message: Text("Saved"), dismissButton: .default(Text("Ok")))
           }
-          
       }
     }
   }
@@ -236,6 +242,7 @@ func fakeAccounts() {
         index = index + 1
         let newRex = rex(id: nil, token: token, nickName: user, image: imagePNG, secret: "r2d2", publicK: publicK, privateK: privateK)
         cloud.users!.rexes.append(newRex)
+        loadingPubPublisher.send(String(index))
       }
     }
     crypto.putPublicKey(publicK: sPublicK!, keySize: 2048, publicTag: "ch.cqd.WotsApp")
