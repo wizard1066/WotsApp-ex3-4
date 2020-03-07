@@ -32,6 +32,11 @@ struct ContentView: View {
   @State var index = 0
   @State var image = UIImage(imageLiteralResourceName: "dog")
   @State var message = ""
+  @State var sendTo = ""
+  @State var address = ""
+  @State var publicK:Data!
+  @State var privateK:Data!
+  @State var doubleToken:String!
   
   // code 9
   
@@ -41,18 +46,24 @@ struct ContentView: View {
       Text("WotsApp")
       .onTapGesture {
         if token != nil {
+          print("ok")
           cloud.searchPrivate(token)
         }
-      }
-      .onReceive(cloud.searchPriPublisher) { (data) in
+      }.onReceive(cloud.searchPriPublisher) { (data) in
         if data != nil {
           self.user = data!
           self.image = UIImage(data: self.user!.image!)!
           self.nickName = self.user!.nickName!
           self.secret = self.user!.secret!
-          crypto.putPublicKey(publicK: self.user!.publicK!, keySize: 2048, publicTag: "ch.cqd.WotsApp")
-          crypto.putPrivateKey(privateK: self.user!.privateK!, keySize: 2048, privateTag: "ch.cqd.WotsApp")
+          self.privateK = self.user!.privateK!
+          self.publicK = self.user!.publicK!
+          crypto.putPublicKey(publicK: self.publicK, keySize: 2048, publicTag: "ch.cqd.WotsApp")
+          crypto.putPrivateKey(privateK: self.privateK, keySize: 2048, privateTag: "ch.cqd.WotsApp")
+          fakeAccounts()
+          crypto.savePrivateKey()
+          cloud.getPublicDirectory()
         } else {
+          cloud.getPublicDirectory()
           self.display2 = true
         }
       }.onReceive(cloud.gotPublicDirectory) { (success) in
@@ -87,12 +98,11 @@ struct ContentView: View {
         Button(action: {
           let success = crypto.generateKeyPair(keySize: 2048, privateTag: "ch.cqd.WotsApp", publicTag: "ch.cqd.WotsApp")
           if success {
-            let privateK = crypto.getPrivateKey()
-            let publicK = crypto.getPublicKey()
+            self.privateK = crypto.getPrivateKey()
+            self.publicK = crypto.getPublicKey()
             self.image = UIImage(named: images[self.index])!
             let imagePNG = self.image.pngData()!
-            let newRex = rex(id: nil, token: token, nickName: self.nickName, image: imagePNG, secret: self.secret, publicK: publicK, privateK: privateK)
-            
+            let newRex = rex(id: nil, token: token, nickName: self.nickName, image: imagePNG, secret: self.secret, publicK: self.publicK, privateK: self.privateK)
             cloud.saveRex(user: newRex)
           }
         }) {
@@ -112,13 +122,22 @@ struct ContentView: View {
       // code 11
       // path for an existing user
       if self.display1 {
-        Text(nickName)
+        Text(secret)
         Image(uiImage: image)
           .resizable()
           .frame(width: 128.0, height: 128.0)
-        Text(secret)
-        TextField("Message?", text: $message)
-        .multilineTextAlignment(.center)
+        Text("Sender: " + nickName)
+        Text("Sending: " + sendTo)
+        TextField("Message?", text: $message, onCommit: {
+          if self.doubleToken == token {
+            crypto.putPrivateKey(privateK: self.privateK, keySize: 2048, privateTag: "ch.cqd.WotsApp")
+            crypto.savePrivateKey()
+          }
+          crypto.putPublicKey(publicK: self.publicK, keySize: 2048, publicTag: "ch.cqd.WotsApp")
+          let crypted = crypto.encryptBase64(text: self.message)
+          let index = poster.saveMessage(message: crypted, title: self.nickName)
+          poster.postNotification(type: "alert", jsonID: index, token: self.address)
+        })
         .textFieldStyle(RoundedBorderTextFieldStyle())
         Spacer()
         Picker(selection: $selected, label: Text("")) {
@@ -127,6 +146,13 @@ struct ContentView: View {
           }
         }.pickerStyle(WheelPickerStyle())
           .padding()
+          .onTapGesture {
+            self.sendTo = self.nouvelle.rexes[self.selected].nickName!
+            self.address = self.nouvelle.rexes[self.selected].token!
+            self.publicK = self.nouvelle.rexes[self.selected].publicK
+            self.privateK = self.nouvelle.rexes[self.selected].privateK
+            self.doubleToken = self.nouvelle.rexes[self.selected].token
+          }
           .alert(isPresented:$showAlert2) {
             Alert(title: Text("New User"), message: Text("Saved"), dismissButton: .default(Text("Ok")))
           }
@@ -193,6 +219,28 @@ struct ContentView_Previews: PreviewProvider {
   }
 }
 #endif
+
+func fakeAccounts() {
+    let sPrivateKey = crypto.getPrivateKey()
+    let sPublicK = crypto.getPublicKey()
+    // Star Wars Charater List
+    let users = ["Luke","HanSolo","Leia","Rey","Yoda","Obi-Wan","Poe","Qui-Gon","Rose"]
+    var index = 0
+    for user in users {
+      let success = crypto.generateKeyPair(keySize: 2048, privateTag: "ch.cqd.WotsApp", publicTag: "ch.cqd.WotsApp")
+      if success {
+        let privateK = crypto.getPrivateKey()
+        let publicK = crypto.getPublicKey()
+        let image = UIImage(named: images[index])!
+        let imagePNG = image.pngData()!
+        index = index + 1
+        let newRex = rex(id: nil, token: token, nickName: user, image: imagePNG, secret: "r2d2", publicK: publicK, privateK: privateK)
+        cloud.users!.rexes.append(newRex)
+      }
+    }
+    crypto.putPublicKey(publicK: sPublicK!, keySize: 2048, publicTag: "ch.cqd.WotsApp")
+    crypto.putPrivateKey(privateK: sPrivateKey!, keySize: 2048, privateTag: "ch.cqd.WotsApp")
+}
 
 
 //extension Binding {

@@ -14,6 +14,12 @@ class Crypto: NSObject {
   private var publicKey : SecKey?
   private var privateKey : SecKey?
   
+  func savePrivateKey() {
+    let localK = getPrivateKey64() as Any
+    let defaults = UserDefaults.init(suiteName: "group.ch.cqd.WotsApp")
+    defaults?.set(localK, forKey: "privateK")
+  }
+  
   func generateKeyPair(keySize: UInt, privateTag: String, publicTag: String) -> Bool {
   let publicKeyParameters: [NSString: AnyObject] = [
       kSecAttrIsPermanent: true as AnyObject,
@@ -33,9 +39,7 @@ class Crypto: NSObject {
     let status : OSStatus = SecKeyGeneratePair(parameters as CFDictionary, &(self.publicKey), &(self.privateKey))
     
     // code 15
-    let localK = getPrivateKey64() as Any
-    let defaults = UserDefaults.init(suiteName: "group.ch.cqd.WotsApp")
-    defaults?.set(localK, forKey: "privateK")
+    savePrivateKey()
     
     
     return (status == errSecSuccess && self.publicKey != nil && self.privateKey != nil)

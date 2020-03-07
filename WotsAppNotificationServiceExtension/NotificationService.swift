@@ -28,7 +28,7 @@ class NotificationService: UNNotificationServiceExtension {
           
             putPrivateKey64(privateK: localK!, keySize: 2048, privateTag: "ch.cqd.WotsApp")
             
-            bestAttemptContent.title = "\(bestAttemptContent.title) [excrypted]"
+            bestAttemptContent.title = "\(bestAttemptContent.title) [encrypted]"
             bestAttemptContent.body = decpryptBase64(encrpted: bestAttemptContent.body)!
             contentHandler(bestAttemptContent)
         }
