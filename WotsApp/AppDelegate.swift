@@ -32,6 +32,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     print("Device Token: \n\(token)\n")
   }
   
+  func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+    print("failed error ",error)
+  }
+  
   // code 11
   
   func application( _ application: UIApplication,

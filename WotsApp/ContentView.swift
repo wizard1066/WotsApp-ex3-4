@@ -56,6 +56,8 @@ struct ContentView: View {
         if token != nil {
           print("ok")
           cloud.searchPrivate(token)
+        } else {
+          print("no registration")
         }
       }
       // code 3
@@ -152,16 +154,12 @@ struct ContentView: View {
       // path for an existing user
       if self.display1 {
         Text(secret)
-        Image(uiImage: image)
-          .resizable()
-          .frame(width: 128.0, height: 128.0)
+//        Image(uiImage: image)
+//          .resizable()
+//          .frame(width: 128.0, height: 128.0)
         Text("Sender: " + nickName)
         Text("Sending: " + sendTo)
         TextField("Message?", text: $message, onCommit: {
-//          if self.doubleToken == token {
-//            crypto.putPrivateKey(privateK: self.privateK, keySize: 2048, privateTag: "ch.cqd.WotsApp")
-//            crypto.savePrivateKey()
-//          }
           crypto.putPublicKey(publicK: self.publicK, keySize: 2048, publicTag: "ch.cqd.WotsApp")
           let crypted = crypto.encryptBase64(text: self.message)
           let index = poster.saveMessage(message: crypted, title: self.nickName)
@@ -181,6 +179,7 @@ struct ContentView: View {
             self.publicK = self.nouvelle.rexes[self.selected].publicK
             self.privateK = self.nouvelle.rexes[self.selected].privateK
             self.doubleToken = self.nouvelle.rexes[self.selected].token
+            cloud.authRequest(auth: "request", name: self.sendTo, device: self.address)
         }
         .alert(isPresented:$showAlert2) {
           Alert(title: Text("New User"), message: Text("Saved"), dismissButton: .default(Text("Ok")))

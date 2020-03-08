@@ -63,6 +63,7 @@ class Storage: NSObject {
   let savedPublisher = PassthroughSubject<Bool?, Never>()
   
   let searchPri2Publisher = PassthroughSubject<[rex]?, Never>()
+  let shortProtocol = PassthroughSubject<String, Never>()
 
   var publicDB: CKDatabase!
   var privateDB: CKDatabase!
@@ -251,6 +252,65 @@ class Storage: NSObject {
         self.privateDB.add(saveRecordsOperation)
       
     }
+    
+    func authRequest(auth:String, name: String, device:String) {
+        print("***** authRequest ******")
+        let predicate = NSPredicate(format: "nickName = %@", name)
+        let query = CKQuery(recordType: "directory", predicate: predicate)
+          privateDB.perform(query,
+                         inZoneWith: CKRecordZone.default().zoneID) { [weak self] results, error in
+                          guard let _ = self else { return }
+                          if let error = error {
+                            DispatchQueue.main.async { print("error",error) }
+                            return
+                          }
+                          guard let results = results else { return }
+                          for result in results {
+                            print("results ",result)
+                            let token = result.object(forKey: "token") as? String
+                            if token == nil || token == "" {
+                              self!.authRequest2(auth: auth, name: name, device: device)
+                            } else {
+                              DispatchQueue.main.async { self!.shortProtocol.send(token!) }
+                            }
+                          }
+                          if results.count == 0 {
+                            print("no name ",name)
+                            self!.authRequest2(auth: auth, name: name, device: device)
+                          }
+        }
+      }
+      
+      
+      func authRequest2(auth:String, name: String, device:String) {
+        // Search the directory
+        print("****** auth Request 2 *********")
+        let predicate = NSPredicate(format: "nickName = %@", name)
+        let query = CKQuery(recordType: "directory", predicate: predicate)
+        publicDB.perform(query,
+                         inZoneWith: CKRecordZone.default().zoneID) { [weak self] results, error in
+                          guard let _ = self else { return }
+                          if let error = error {
+                            DispatchQueue.main.async { print("error",error) }
+                            return
+                          }
+                          guard let results = results else { return }
+                          for result in results {
+                            print("results ",result)
+                            let token = result.object(forKey: "token") as? String
+                            if token != nil {
+                              let messageID = poster.requestMessage(message: "Request", title: name)
+                              poster.postNotification(type: "alert", jsonID: messageID, token: device)
+                            }
+                          }
+                          if results.count == 0 {
+                            print("no name ",name)
+                            
+                          }
+        }
+      }
+    
+    
     
     func fetchPublicRecord(_ recordID: CKRecord.ID, token: String) -> Void
      {
