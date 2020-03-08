@@ -181,10 +181,10 @@ struct ContentView: View {
             self.publicK = self.nouvelle.rexes[self.selected].publicK
             self.privateK = self.nouvelle.rexes[self.selected].privateK
             self.doubleToken = self.nouvelle.rexes[self.selected].token
-          }
-          .alert(isPresented:$showAlert2) {
-            Alert(title: Text("New User"), message: Text("Saved"), dismissButton: .default(Text("Ok")))
-          }
+        }
+        .alert(isPresented:$showAlert2) {
+          Alert(title: Text("New User"), message: Text("Saved"), dismissButton: .default(Text("Ok")))
+        }
       }
     }
   }
