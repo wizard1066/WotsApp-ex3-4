@@ -267,8 +267,8 @@ class Storage: NSObject {
                           guard let results = results else { return }
                           for result in results {
                             print("results ",result)
-                            let token = result.object(forKey: "token") as? String
-                            if token == nil || token == "" {
+                            let authorized = result.object(forKey: "authorized") as? String
+                            if authorized == nil || authorized == "" {
                               self!.authRequest2(auth: auth, name: name, device: device)
                             } else {
                               DispatchQueue.main.async { self!.shortProtocol.send(token!) }

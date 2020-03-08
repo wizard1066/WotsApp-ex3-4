@@ -14,7 +14,9 @@ var token: String!
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
   func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-    registerForNotifications()
+    DispatchQueue.main.async {
+      self.registerForNotifications()
+    }
     return true
   }
 
