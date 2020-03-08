@@ -14,6 +14,8 @@ class Crypto: NSObject {
   private var publicKey : SecKey?
   private var privateKey : SecKey?
   
+  // code 1
+  
   func savePrivateKey() {
     let localK = getPrivateKey64() as Any
     let defaults = UserDefaults.init(suiteName: "group.ch.cqd.WotsApp")

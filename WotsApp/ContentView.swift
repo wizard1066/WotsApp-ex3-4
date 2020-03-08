@@ -8,7 +8,6 @@
 
 import SwiftUI
 import Combine
-// code 7
 
 let loadingPubPublisher = PassthroughSubject<String, Never>()
 
@@ -22,8 +21,6 @@ class nouvelleUsers: ObservableObject {
   var rexes:[rex] = []
 }
 
-// code 8
-
 struct ContentView: View {
   @State var user: rex?
   @State var nouvelle = nouvelleUsers()
@@ -36,27 +33,32 @@ struct ContentView: View {
   @State var index = 0
   @State var image = UIImage(imageLiteralResourceName: "dog")
   @State var message = ""
+  
+  // code 2
   @State var sendTo = ""
   @State var address = ""
   @State var publicK:Data!
   @State var privateK:Data!
+  
+  @State var display3 = false
+  @State var selected2 = 0
+  
   @State var doubleToken:String!
-  @State var loading = "WotsApp"
+  
   
   // code 9
   
   var body: some View {
     VStack(alignment: .center) {
       // path as you start the app
-      Text(loading)
+      Text("WhatsApp")
       .onTapGesture {
         if token != nil {
           print("ok")
           cloud.searchPrivate(token)
         }
-      }.onReceive(loadingPubPublisher, perform: { ( info ) in
-        self.loading = info
-      })
+      }
+      // code 3
       .onReceive(cloud.searchPriPublisher) { (data) in
         if data != nil {
           self.user = data!
@@ -81,7 +83,26 @@ struct ContentView: View {
             self.display1 = true
           }
         }
+      }.onReceive(cloud.searchPri2Publisher) { (data) in
+        self.nouvelle.rexes = data!
+        self.display3 = true
       }
+      
+      // code for multiple owners one device
+      if display3 {
+        Spacer()
+        Picker(selection: $selected2, label: Text("")) {
+          ForEach(0 ..< self.nouvelle.rexes.count) {dix in
+            Text(self.nouvelle.rexes[dix].nickName!)
+          }
+        }.pickerStyle(WheelPickerStyle())
+          .padding()
+          .onTapGesture {
+            cloud.searchPriPublisher.send(self.nouvelle.rexes[self.selected2])
+            self.display3 = false
+          }
+      }
+      
       
       // code 10
       // path for a new user

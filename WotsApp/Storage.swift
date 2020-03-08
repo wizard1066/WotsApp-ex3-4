@@ -61,6 +61,8 @@ class Storage: NSObject {
   let searchPriPublisher = PassthroughSubject<rex?, Never>()
   let gotPublicDirectory = PassthroughSubject<Bool?, Never>()
   let savedPublisher = PassthroughSubject<Bool?, Never>()
+  
+  let searchPri2Publisher = PassthroughSubject<[rex]?, Never>()
 
   var publicDB: CKDatabase!
   var privateDB: CKDatabase!
@@ -111,18 +113,30 @@ class Storage: NSObject {
                       if results.count == 0 {
                         DispatchQueue.main.async { self!.searchPriPublisher.send(nil) }
                       } else {
-                        // Assuming we tokens are unique, which I believe they should be
-                        let record = results.first!
-                        let name = record.object(forKey: "nickName") as? String
-                        let secret = record.object(forKey: "secret") as? String
-                        let publicK = record.object(forKey: "publicK") as? Data
-                        let privateK = record.object(forKey: "privateK") as? Data
-                        let token = record.object(forKey: "token") as? String
-                        let image = record.object(forKey: "image") as? Data
-                        let newRex = rex(id: record.recordID, token: token, nickName: name, image: image, secret: secret, publicK: publicK, privateK: privateK)
-                        DispatchQueue.main.async { self!.searchPriPublisher.send(newRex) }
+                        if results.count == 1 {
+                          let newRex = self!.setRecord(record: results.first!)
+                          DispatchQueue.main.async { self!.searchPriPublisher.send(newRex) }
+                        } else {
+                          var newRexes:[rex] = []
+                          for result in results {
+                            let newRex = self!.setRecord(record: result)
+                            newRexes.append(newRex)
+                          }
+                          DispatchQueue.main.async { self!.searchPri2Publisher.send(newRexes) }
+                        }
                       }
     }
+  }
+  
+  func setRecord(record: CKRecord) -> rex {
+    let name = record.object(forKey: "nickName") as? String
+    let secret = record.object(forKey: "secret") as? String
+    let publicK = record.object(forKey: "publicK") as? Data
+    let privateK = record.object(forKey: "privateK") as? Data
+    let token = record.object(forKey: "token") as? String
+    let image = record.object(forKey: "image") as? Data
+    let newRex = rex(id: record.recordID, token: token, nickName: name, image: image, secret: secret, publicK: publicK, privateK: privateK)
+    return(newRex)
   }
   
   // code 4
