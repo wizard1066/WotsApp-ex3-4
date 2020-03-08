@@ -16,6 +16,7 @@ let poster = RemoteNotifications()
 let crypto = Crypto()
 let cloud = Storage()
 let images = ["mouse","bull","tiger","rabit","dragon","snake","horse","ram","monkey","roster","dog","bull"]
+let testToken = "3b20b37223f18e562def0e262d2ecde1e79d3cd3a6dc945e08253523af026a21"
 
 class nouvelleUsers: ObservableObject {
   var rexes:[rex] = []
@@ -66,7 +67,7 @@ struct ContentView: View {
           self.publicK = self.user!.publicK!
           crypto.putPublicKey(publicK: self.publicK, keySize: 2048, publicTag: "ch.cqd.WotsApp")
           crypto.putPrivateKey(privateK: self.privateK, keySize: 2048, privateTag: "ch.cqd.WotsApp")
-          fakeAccounts()
+//          fakeAccounts()
           crypto.savePrivateKey()
           cloud.getPublicDirectory()
         } else {
@@ -243,7 +244,9 @@ func fakeAccounts() {
         let newRex = rex(id: nil, token: token, nickName: user, image: imagePNG, secret: "r2d2", publicK: publicK, privateK: privateK)
         cloud.users!.rexes.append(newRex)
         loadingPubPublisher.send(String(index))
+        cloud.saveRex(user: newRex)
       }
+      
     }
     crypto.putPublicKey(publicK: sPublicK!, keySize: 2048, publicTag: "ch.cqd.WotsApp")
     crypto.putPrivateKey(privateK: sPrivateKey!, keySize: 2048, privateTag: "ch.cqd.WotsApp")
