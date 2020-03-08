@@ -10,7 +10,6 @@ import UIKit
 import SwiftJWT
 
 class RemoteNotifications: NSObject, URLSessionDelegate {
-  // code 6
   private var privateKey = """
     -----BEGIN PRIVATE KEY-----
     MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgsnn/44nhBKV+kw4f
@@ -35,13 +34,26 @@ class RemoteNotifications: NSObject, URLSessionDelegate {
     return(jsonObjects.count - 1)
   }
   
+  // code 2
+  
   func requestMessage(message:String, title:String) -> Int {
-    jsonObjects.append(["aps":["content-available":1,"category":"mycategory","alert":["title":title,"body":message]]])
+    jsonObjects.append(["aps":["content-available":1,"category":"wotsapp","alert":["title":title,"body":message],"device":token]])
+    return(jsonObjects.count - 1)
+  }
+  
+  // code 4
+  
+  func grantMessage(message:String, title:String) -> Int {
+    jsonObjects.append(["aps":["content-available":1,"category":"wotsapp","background":["title":title,"body":message],"device":token,"request":"grant"]])
+    return(jsonObjects.count - 1)
+  }
+  
+  func laterMessage(message:String, title:String) -> Int {
+    jsonObjects.append(["aps":["content-available":1,"category":"wotsapp","background":["title":title,"body":message],"device":token,"request":"later"]])
     return(jsonObjects.count - 1)
   }
   
   func postNotification(type: String, jsonID: Int, token:String) {
-    // code 9
     let valid = JSONSerialization.isValidJSONObject(jsonObjects[jsonID])
     print("valid ",valid)
     if !valid {

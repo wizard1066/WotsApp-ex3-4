@@ -253,6 +253,8 @@ class Storage: NSObject {
       
     }
     
+    // code 3
+    
     func authRequest(auth:String, name: String, device:String) {
         print("***** authRequest ******")
         let predicate = NSPredicate(format: "nickName = %@", name)
@@ -281,6 +283,7 @@ class Storage: NSObject {
         }
       }
       
+      // code 4
       
       func authRequest2(auth:String, name: String, device:String) {
         // Search the directory

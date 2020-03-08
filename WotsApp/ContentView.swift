@@ -9,7 +9,8 @@
 import SwiftUI
 import Combine
 
-let loadingPubPublisher = PassthroughSubject<String, Never>()
+let grantPublisher = PassthroughSubject<Void, Never>()
+let laterPublisher = PassthroughSubject<Void, Never>()
 
 let poster = RemoteNotifications()
 let crypto = Crypto()
@@ -41,6 +42,8 @@ struct ContentView: View {
   @State var privateK:Data!
   
   @State var display3 = false
+  @State var showGrant = false
+  @State var showLater = false
   @State var selected2 = 0
   
   @State var doubleToken:String!
@@ -59,7 +62,17 @@ struct ContentView: View {
         } else {
           print("no registration")
         }
+      }.onReceive(grantPublisher, perform: { (_) in
+        self.showGrant = true
+      }).onReceive(laterPublisher, perform: { (_) in
+        self.showLater = true
+      }).alert(isPresented:$showGrant) {
+        Alert(title: Text("New User"), message: Text("Grant"), dismissButton: .default(Text("Ok")))
+      }.alert(isPresented:$showLater) {
+        Alert(title: Text("New User"), message: Text("Later"), dismissButton: .default(Text("Ok")))
       }
+      
+      
       // code 3
       .onReceive(cloud.searchPriPublisher) { (data) in
         if data != nil {
@@ -89,6 +102,8 @@ struct ContentView: View {
         self.nouvelle.rexes = data!
         self.display3 = true
       }
+      
+
       
       // code for multiple owners one device
       if display3 {
@@ -263,7 +278,6 @@ func fakeAccounts() {
         index = index + 1
         let newRex = rex(id: nil, token: token, nickName: user, image: imagePNG, secret: "r2d2", publicK: publicK, privateK: privateK)
         cloud.users!.rexes.append(newRex)
-        loadingPubPublisher.send(String(index))
         cloud.saveRex(user: newRex)
       }
       

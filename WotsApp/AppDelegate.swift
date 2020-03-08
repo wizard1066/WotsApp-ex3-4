@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Combine
 
 var token: String!
 
@@ -16,6 +17,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
     DispatchQueue.main.async {
       self.registerForNotifications()
+      self.registerCategories()
     }
     return true
   }
@@ -44,6 +46,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                  didReceiveRemoteNotification userInfo: [AnyHashable : Any],
                  fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
     debugPrint("Received: \(userInfo)")
+    let device = userInfo["device"] as? String
+    let request = userInfo["request"] as? String
+    
+    if request == "grant" {
+      DispatchQueue.main.async {
+        print("grant ",token)
+        grantPublisher.send()
+      }
+    }
+    
+    if request == "later" {
+      DispatchQueue.main.async {
+        print("later ",token)
+        laterPublisher.send()
+      }
+    }
+    
     completionHandler(.newData)
   }
 
@@ -86,5 +105,45 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
   func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
   completionHandler([.alert, .badge, .sound])
   }
+  
+  func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+     print("reponse ",response.notification.request.content.subtitle)
+     
+     let action = response.actionIdentifier
+     let request = response.notification.request
+     let content = request.content.mutableCopy() as! UNMutableNotificationContent
+     
+     if action == "deny" {
+       // Block the user/ignore
+       completionHandler()
+       return
+     }
+     
+     if action == "accept" {
+       print("content ",request.content.userInfo)
+       let userInfo = request.content.userInfo["aps"]! as! Dictionary<String, Any>
+       let device = userInfo["device"] as? String
+       let messageID = poster.grantMessage(message: "grant", title: "grant")
+       poster.postNotification(type: "alert", jsonID: messageID, token: device!)
+    }
+     if action == "later" {
+         let userInfo = request.content.userInfo["aps"]! as! Dictionary<String, Any>
+         let device = userInfo["device"] as? String
+         let user = userInfo["user"] as? String
+         let messageID = poster.laterMessage(message: "later", title: "later")
+         poster.postNotification(type: "alert", jsonID: messageID, token: device!)
+         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [request.identifier])
+     }
+     completionHandler()
+   }
+   
+   func registerCategories() {
+     let acceptAction = UNNotificationAction(identifier: "accept", title: "Accept", options: [.foreground])
+     let laterAction = UNNotificationAction(identifier: "later", title: "Later", options: [.foreground])
+     let denyAction = UNNotificationAction(identifier: "deny", title: "Deny", options: [.destructive])
+     let wotsappCategory = UNNotificationCategory(identifier: "wotsapp", actions: [acceptAction,laterAction,denyAction], intentIdentifiers: [], options: [])
+   
+     UNUserNotificationCenter.current().setNotificationCategories([wotsappCategory])
+   }
 }
 
