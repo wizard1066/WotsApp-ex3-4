@@ -21,11 +21,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     return true
   }
+  
+  func applicationWillTerminate(_ application: UIApplication) {
+    UserDefaults.standard.set(false, forKey: "enabled_preference")
+  }
 
   func application(_ application: UIApplication, your  launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
     // Override point for customization after application launch.
-    
+    NotificationCenter.default.addObserver(self, selector: #selector(defaultsChanged), name: UserDefaults.didChangeNotification, object: nil)
     return true
+  }
+  
+  @objc func defaultsChanged(){
+    if UserDefaults.standard.bool(forKey: "enabled_preference") {
+      UserDefaults.standard.set(false, forKey: "enabled_preference")
+    } else {
+      UserDefaults.standard.set(true, forKey: "enabled_preference")
+    }
   }
   
   //code 5

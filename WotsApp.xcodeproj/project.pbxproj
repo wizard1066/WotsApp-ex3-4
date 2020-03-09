@@ -12,6 +12,7 @@
 		7B0F4342241565EB00FBFB6E /* NotificationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B0F4341241565EB00FBFB6E /* NotificationViewController.swift */; };
 		7B0F4345241565EB00FBFB6E /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7B0F4343241565EB00FBFB6E /* MainInterface.storyboard */; };
 		7B0F4349241565EB00FBFB6E /* WotsAppContentExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 7B0F433B241565EB00FBFB6E /* WotsAppContentExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		7B7F47C62416ADCC00918F3C /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 7B7F47C52416ADCC00918F3C /* Settings.bundle */; };
 		7BBD1C05240E952700D8CDBA /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBD1BF6240E723E00D8CDBA /* NotificationService.swift */; };
 		7BBD1C06240E958700D8CDBA /* WotsAppNotificationServiceExtension.appex in Resources */ = {isa = PBXBuildFile; fileRef = 7BBD1BF4240E723E00D8CDBA /* WotsAppNotificationServiceExtension.appex */; };
 		7BBD1C09240E996100D8CDBA /* WotsAppNotificationServiceExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 7BBD1BF4240E723E00D8CDBA /* WotsAppNotificationServiceExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -75,6 +76,7 @@
 		7B0F4341241565EB00FBFB6E /* NotificationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationViewController.swift; sourceTree = "<group>"; };
 		7B0F4344241565EB00FBFB6E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/MainInterface.storyboard; sourceTree = "<group>"; };
 		7B0F4346241565EB00FBFB6E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		7B7F47C52416ADCC00918F3C /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		7BBD1BF4240E723E00D8CDBA /* WotsAppNotificationServiceExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WotsAppNotificationServiceExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		7BBD1BF6240E723E00D8CDBA /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		7BBD1BF8240E723E00D8CDBA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -186,6 +188,7 @@
 				7BE45AB4240AD54E00D3FF68 /* LocalNotifications.swift */,
 				7BE45AA2240AD2CE00D3FF68 /* SceneDelegate.swift */,
 				7BE45AA4240AD2CE00D3FF68 /* ContentView.swift */,
+				7B7F47C52416ADCC00918F3C /* Settings.bundle */,
 				7BE45AA6240AD2D700D3FF68 /* Assets.xcassets */,
 				7BE45AAB240AD2D700D3FF68 /* LaunchScreen.storyboard */,
 				7BE45AAE240AD2D700D3FF68 /* Info.plist */,
@@ -329,6 +332,7 @@
 			files = (
 				7BBD1C06240E958700D8CDBA /* WotsAppNotificationServiceExtension.appex in Resources */,
 				7BE45AAD240AD2D700D3FF68 /* LaunchScreen.storyboard in Resources */,
+				7B7F47C62416ADCC00918F3C /* Settings.bundle in Resources */,
 				7BE45AAA240AD2D700D3FF68 /* Preview Assets.xcassets in Resources */,
 				7BE45AA7240AD2D700D3FF68 /* Assets.xcassets in Resources */,
 			);

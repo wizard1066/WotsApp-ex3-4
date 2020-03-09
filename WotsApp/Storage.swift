@@ -137,6 +137,7 @@ class Storage: NSObject {
     let token = record.object(forKey: "token") as? String
     let image = record.object(forKey: "image") as? Data
     let newRex = rex(id: record.recordID, token: token, nickName: name, image: image, secret: secret, publicK: publicK, privateK: privateK)
+    
     return(newRex)
   }
   

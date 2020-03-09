@@ -9,6 +9,8 @@
 import SwiftUI
 import Combine
 
+// code 3
+
 let alertPublisher = PassthroughSubject<(String, String), Never>()
 let popUpPublisher = PassthroughSubject<String, Never>()
 let cestBonPublisher = PassthroughSubject<Void, Never>()
@@ -33,7 +35,7 @@ struct ContentView: View {
   @State var secret = ""
   @State var showAlert2 = false
   @State var index = 0
-  @State var image = UIImage(imageLiteralResourceName: "dog")
+  @State var image = UIImage(imageLiteralResourceName: "tiny")
   @State var message = ""
   
   @State var sendTo = ""
@@ -48,7 +50,10 @@ struct ContentView: View {
   @State var alertMessage = ""
   @State var disableText = false
   
+  @State var nextState = false
+  
   @State var doubleToken:String!
+
   
   
   var body: some View {
@@ -65,16 +70,16 @@ struct ContentView: View {
       }.onReceive(alertPublisher, perform: { (content ) in
         (self.title,self.alertMessage) = content
         self.showAlert = true
-        if self.title == "later" || self.title == "deny"  {
-          self.disableText = true
-        } else {
-          self.disableText = false
-        }
+        self.disableText = true
       }).alert(isPresented:$showAlert) {
         Alert(title: Text(self.title), message: Text(self.alertMessage), dismissButton: .default(Text("Ok")))
-      }
+      }.onReceive(cestBonPublisher, perform: { (_) in
+        self.disableText = false
+      })
       .onReceive(cloud.searchPriPublisher) { (data) in
-        if data != nil {
+        self.nextState = UserDefaults.standard.bool(forKey: "enabled_preference")
+        print("next ",self.nextState)
+        if data != nil && self.nextState == false {
           self.user = data!
           self.image = UIImage(data: self.user!.image!)!
           self.nickName = self.user!.nickName!
@@ -87,11 +92,11 @@ struct ContentView: View {
           UserDefaults.standard.set(self.secret, forKey: "secret")
           cloud.getPublicDirectory()
         } else {
-          cloud.getPublicDirectory()
+//          cloud.getPublicDirectory()
           self.display2 = true
         }
       }.onReceive(cloud.gotPublicDirectory) { (success) in
-        if success! {
+        if success! && self.nextState == false {
           self.nouvelle.rexes = cloud.users!.rexes
           DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             self.display1 = true
@@ -197,6 +202,7 @@ struct ContentView: View {
             self.doubleToken = self.nouvelle.rexes[self.selected].token
             
             cloud.authRequest(auth: "request", name: self.sendTo, device: self.address)
+            // code 4
         }.onReceive(popUpPublisher, perform: { ( secret ) in
           let alertHC = UIHostingController(rootView: PopUp(code: self.$secret, input: ""))
           alertHC.preferredContentSize = CGSize(width: 256, height: 256)
@@ -221,6 +227,8 @@ struct ContentView_Previews: PreviewProvider {
   }
 }
 #endif
+
+// code 7
 
 struct PopUp : View {
   @Binding var code: String
