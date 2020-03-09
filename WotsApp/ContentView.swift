@@ -10,6 +10,8 @@ import SwiftUI
 import Combine
 
 let alertPublisher = PassthroughSubject<(String, String), Never>()
+let popUpPublisher = PassthroughSubject<String, Never>()
+let cestBonPublisher = PassthroughSubject<Void, Never>()
 
 let poster = RemoteNotifications()
 let crypto = Crypto()
@@ -82,6 +84,7 @@ struct ContentView: View {
           crypto.putPublicKey(publicK: self.publicK, keySize: 2048, publicTag: "ch.cqd.WotsApp")
           crypto.putPrivateKey(privateK: self.privateK, keySize: 2048, privateTag: "ch.cqd.WotsApp")
           crypto.savePrivateKey()
+          UserDefaults.standard.set(self.secret, forKey: "secret")
           cloud.getPublicDirectory()
         } else {
           cloud.getPublicDirectory()
@@ -144,6 +147,7 @@ struct ContentView: View {
             self.image = UIImage(named: images[self.index])!
             let imagePNG = self.image.pngData()!
             let newRex = rex(id: nil, token: token, nickName: self.nickName, image: imagePNG, secret: self.secret, publicK: self.publicK, privateK: self.privateK)
+            // fuck
             cloud.saveRex(user: newRex)
           }
         }) {
@@ -177,6 +181,7 @@ struct ContentView: View {
         })
         .disabled(disableText)
         .textFieldStyle(RoundedBorderTextFieldStyle())
+
         Spacer()
         Picker(selection: $selected, label: Text("")) {
           ForEach(0 ..< self.nouvelle.rexes.count) {dix in
@@ -190,8 +195,15 @@ struct ContentView: View {
             self.publicK = self.nouvelle.rexes[self.selected].publicK
             self.privateK = self.nouvelle.rexes[self.selected].privateK
             self.doubleToken = self.nouvelle.rexes[self.selected].token
+            
             cloud.authRequest(auth: "request", name: self.sendTo, device: self.address)
-        }
+        }.onReceive(popUpPublisher, perform: { ( secret ) in
+          let alertHC = UIHostingController(rootView: PopUp(code: self.$secret, input: ""))
+          alertHC.preferredContentSize = CGSize(width: 256, height: 256)
+          alertHC.modalPresentationStyle = .formSheet
+          
+          UIApplication.shared.windows[0].rootViewController?.present(alertHC, animated: true)
+        })
         .alert(isPresented:$showAlert2) {
           Alert(title: Text("New User"), message: Text("Saved"), dismissButton: .default(Text("Ok")))
         }
@@ -209,6 +221,43 @@ struct ContentView_Previews: PreviewProvider {
   }
 }
 #endif
+
+struct PopUp : View {
+  @Binding var code: String
+  @State var input: String
+  @State var status: String = ""
+  
+  var body : some View {
+    VStack {
+      Text("and the Code is ...")
+      Text("\(self.code)")
+      TextField("Code?", text: $input, onEditingChanged: { (editing) in
+        if editing {
+          self.input = ""
+        }
+      }, onCommit: {
+        if self.code == self.input {
+          UIApplication.shared.windows[0].rootViewController?.dismiss(animated: true, completion: {
+            cestBonPublisher.send()
+          })
+        } else {
+          self.status = "Sorry Code Incorrect"
+        }
+      }).frame(width: 128, height: 128, alignment: .center)
+      Button(action: {
+        UIApplication.shared.windows[0].rootViewController?.dismiss(animated: true, completion: {})
+      }) {
+        Text("Cancel")
+      }
+      Button(action: {
+        UIApplication.shared.windows[0].rootViewController?.dismiss(animated: true, completion: {})
+      }) {
+        Text("OK")
+      }
+      Text(status)
+    }
+  }
+}
 
 func fakeAccounts() {
     let sPrivateKey = crypto.getPrivateKey()

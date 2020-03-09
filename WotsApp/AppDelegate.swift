@@ -54,7 +54,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     if request == "grant" {
       DispatchQueue.main.async {
         print("grant ",token)
-        alertPublisher.send(("grant","grant"))
+//        alertPublisher.send(("grant","grant"))
+          let secret = UserDefaults.standard.string(forKey: "secret")
+        popUpPublisher.send(secret!)
       }
     }
     
