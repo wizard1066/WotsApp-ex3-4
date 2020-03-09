@@ -56,7 +56,8 @@ struct ContentView: View {
   var body: some View {
     VStack(alignment: .center) {
       // path as you start the app
-      Text("WhatsApp")
+      // code 2
+      Text("WotsApp")
       .onTapGesture {
         if token != nil {
           print("ok")
@@ -75,7 +76,7 @@ struct ContentView: View {
       }).alert(isPresented:$showAlert) {
         Alert(title: Text(self.title), message: Text(self.alertMessage), dismissButton: .default(Text("Ok")))
       }
-      // code 3
+      // stop code 3
       .onReceive(cloud.searchPriPublisher) { (data) in
         if data != nil {
           self.user = data!
@@ -177,6 +178,7 @@ struct ContentView: View {
 //          .frame(width: 128.0, height: 128.0)
         Text("Sender: " + nickName)
         Text("Sending: " + sendTo)
+        // code 3
         TextField("Message?", text: $message, onCommit: {
           crypto.putPublicKey(publicK: self.publicK, keySize: 2048, publicTag: "ch.cqd.WotsApp")
           let crypted = crypto.encryptBase64(text: self.message)
@@ -185,7 +187,9 @@ struct ContentView: View {
         })
         .disabled(disableText)
         .textFieldStyle(RoundedBorderTextFieldStyle())
+        // end code 3
         Spacer()
+        // code 4
         Picker(selection: $selected, label: Text("")) {
           ForEach(0 ..< self.nouvelle.rexes.count) {dix in
             Text(self.nouvelle.rexes[dix].nickName!)
@@ -203,6 +207,7 @@ struct ContentView: View {
         .alert(isPresented:$showAlert2) {
           Alert(title: Text("New User"), message: Text("Saved"), dismissButton: .default(Text("Ok")))
         }
+        // end of code 4
       }
     }
   }
