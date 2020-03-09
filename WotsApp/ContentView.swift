@@ -39,8 +39,6 @@ struct ContentView: View {
   @State var publicK:Data!
   @State var privateK:Data!
   
-  // code 1
-  
   @State var display3 = false
   @State var showAlert = false
   @State var selected2 = 0
@@ -51,12 +49,9 @@ struct ContentView: View {
   @State var doubleToken:String!
   
   
-  
-  
   var body: some View {
     VStack(alignment: .center) {
       // path as you start the app
-      // code 2
       Text("WotsApp")
       .onTapGesture {
         if token != nil {
@@ -76,7 +71,6 @@ struct ContentView: View {
       }).alert(isPresented:$showAlert) {
         Alert(title: Text(self.title), message: Text(self.alertMessage), dismissButton: .default(Text("Ok")))
       }
-      // stop code 3
       .onReceive(cloud.searchPriPublisher) { (data) in
         if data != nil {
           self.user = data!
@@ -87,7 +81,6 @@ struct ContentView: View {
           self.publicK = self.user!.publicK!
           crypto.putPublicKey(publicK: self.publicK, keySize: 2048, publicTag: "ch.cqd.WotsApp")
           crypto.putPrivateKey(privateK: self.privateK, keySize: 2048, privateTag: "ch.cqd.WotsApp")
-//          fakeAccounts()
           crypto.savePrivateKey()
           cloud.getPublicDirectory()
         } else {
@@ -122,8 +115,6 @@ struct ContentView: View {
           }
       }
       
-      
-      // code 10
       // path for a new user
       if display2 {
         Spacer()
@@ -169,13 +160,12 @@ struct ContentView: View {
         Spacer()
       }
       
-      // code 11
       // path for an existing user
       if self.display1 {
         Text(secret)
-//        Image(uiImage: image)
-//          .resizable()
-//          .frame(width: 128.0, height: 128.0)
+        Image(uiImage: image)
+          .resizable()
+          .frame(width: 128.0, height: 128.0)
         Text("Sender: " + nickName)
         Text("Sending: " + sendTo)
         // code 3
@@ -187,9 +177,7 @@ struct ContentView: View {
         })
         .disabled(disableText)
         .textFieldStyle(RoundedBorderTextFieldStyle())
-        // end code 3
         Spacer()
-        // code 4
         Picker(selection: $selected, label: Text("")) {
           ForEach(0 ..< self.nouvelle.rexes.count) {dix in
             Text(self.nouvelle.rexes[dix].nickName!)
@@ -207,62 +195,13 @@ struct ContentView: View {
         .alert(isPresented:$showAlert2) {
           Alert(title: Text("New User"), message: Text("Saved"), dismissButton: .default(Text("Ok")))
         }
-        // end of code 4
       }
     }
   }
 }
 
 
-//struct ContentView: View {
-//  @State var messageTitle: String = ""
-//  @State var messageBody: String = ""
-//  var body: some View {
-//    VStack {
-//      Button(action: {
-//        let messageNo = poster.saveMessage(message: self.messageBody, title: self.messageTitle)
-//        poster.postNotification(type: "alert", jsonID: messageNo, token: token)
-//      }) {
-//        Text("post foreground")
-//      }
-//      Button(action: {
-//        self.messageBody = crypto.encryptBase64(text: self.messageBody)
-//      }) {
-//        Text("encrypt")
-//      }
-//
-//      TextField("Title?", text: $messageTitle)
-//           .multilineTextAlignment(.center)
-//           .textFieldStyle(RoundedBorderTextFieldStyle())
-//
-//      TextField("Body?", text: $messageBody, onCommit: {
-//        let success = crypto.generateKeyPair(keySize: 2048, privateTag: "ch.cqd.WotsApp", publicTag: "ch.cqd.WotsApp")
-//        if success {
-//          let privateK = crypto.getPrivateKey()
-//          let publicK = crypto.getPublicKey()
-//          // code
-//          let exportedPublicK = crypto.getPublicKey64()
-//          crypto.putPublicKey64(publicK: exportedPublicK!, keySize: 2048, publicTag: "ch.cqd.WotsApp")
-//          let exportedPrivateK = crypto.getPrivateKey64()
-//          crypto.putPrivateKey64(privateK: exportedPrivateK!, keySize: 2048, privateTag: "ch.cqd.WotsApp")
-//        }
-//      })
-//      .multilineTextAlignment(.center)
-//      .textFieldStyle(RoundedBorderTextFieldStyle())
-//
-//      Button(action: {
-//        self.messageBody = crypto.decpryptBase64(encrpted: self.messageBody)!
-//      }) {
-//        Text("decrypt")
-//      }
-//      Button(action: {
-//        poster.postNotification(type: "background", jsonID: 1, token: token)
-//      }) {
-//        Text("post background")
-//      }
-//    }
-//  }
-//}
+
 #if DEBUG
 struct ContentView_Previews: PreviewProvider {
   static var previews: some View {
