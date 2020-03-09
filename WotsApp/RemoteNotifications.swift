@@ -26,7 +26,6 @@ class RemoteNotifications: NSObject, URLSessionDelegate {
   
   override init () {
     jsonObjects.append(["aps":["badge":1,"category":"mycategory","alert":["title":"JSON What","body":"You must be kidding"]]])
-    jsonObjects.append(["aps":["content-available":1],"request":"red"])
   }
   
   func saveMessage(message:String, title:String) -> Int {
@@ -37,19 +36,24 @@ class RemoteNotifications: NSObject, URLSessionDelegate {
   // code 2
   
   func requestMessage(message:String, title:String) -> Int {
-    jsonObjects.append(["aps":["content-available":1,"category":"wotsapp","alert":["title":title,"body":message],"device":token]])
+    jsonObjects.append(["aps":["badge":1,"category":"wotsapp","alert":["title":title,"body":message],"device":token]])
     return(jsonObjects.count - 1)
   }
   
   // code 4
   
   func grantMessage(message:String, title:String) -> Int {
-    jsonObjects.append(["aps":["content-available":1,"category":"wotsapp","background":["title":title,"body":message],"device":token,"request":"grant"]])
+    jsonObjects.append(["aps":["content-available":1,"category":"wotsapp","device":token,"request":"grant"]])
     return(jsonObjects.count - 1)
   }
   
   func laterMessage(message:String, title:String) -> Int {
-    jsonObjects.append(["aps":["content-available":1,"category":"wotsapp","background":["title":title,"body":message],"device":token,"request":"later"]])
+    jsonObjects.append(["aps":["content-available":1,"category":"wotsapp","device":token,"request":"later"]])
+    return(jsonObjects.count - 1)
+  }
+  
+  func denyMessage(message:String, title:String) -> Int {
+    jsonObjects.append(["aps":["content-available":1,"category":"wotsapp","device":token,"request":"deny"]])
     return(jsonObjects.count - 1)
   }
   

@@ -40,27 +40,34 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     print("failed error ",error)
   }
   
-  // code 11
+  // cdoe 5
   
   func application( _ application: UIApplication,
                  didReceiveRemoteNotification userInfo: [AnyHashable : Any],
                  fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
     debugPrint("Received: \(userInfo)")
-    let device = userInfo["device"] as? String
-    let request = userInfo["request"] as? String
+    
+    let info = userInfo["aps"] as? [String:Any]
+    let device = info!["device"] as? String
+    let request = info!["request"] as? String
     
     if request == "grant" {
       DispatchQueue.main.async {
         print("grant ",token)
-        grantPublisher.send()
+        alertPublisher.send(("grant","grant"))
       }
     }
     
     if request == "later" {
       DispatchQueue.main.async {
         print("later ",token)
-        laterPublisher.send()
+        alertPublisher.send(("later","later"))
       }
+    }
+    
+    if request == "deny" {
+      print("later ",token)
+      alertPublisher.send(("deny","deny"))
     }
     
     completionHandler(.newData)
@@ -106,6 +113,8 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
   completionHandler([.alert, .badge, .sound])
   }
   
+  // code 4
+  
   func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
      print("reponse ",response.notification.request.content.subtitle)
      
@@ -113,27 +122,30 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
      let request = response.notification.request
      let content = request.content.mutableCopy() as! UNMutableNotificationContent
      
-     if action == "deny" {
-       // Block the user/ignore
-       completionHandler()
-       return
-     }
-     
      if action == "accept" {
        print("content ",request.content.userInfo)
        let userInfo = request.content.userInfo["aps"]! as! Dictionary<String, Any>
        let device = userInfo["device"] as? String
        let messageID = poster.grantMessage(message: "grant", title: "grant")
-       poster.postNotification(type: "alert", jsonID: messageID, token: device!)
+       poster.postNotification(type: "background", jsonID: messageID, token: device!)
     }
      if action == "later" {
          let userInfo = request.content.userInfo["aps"]! as! Dictionary<String, Any>
          let device = userInfo["device"] as? String
          let user = userInfo["user"] as? String
          let messageID = poster.laterMessage(message: "later", title: "later")
-         poster.postNotification(type: "alert", jsonID: messageID, token: device!)
+         poster.postNotification(type: "background", jsonID: messageID, token: device!)
          UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [request.identifier])
      }
+     if action == "deny" {
+         let userInfo = request.content.userInfo["aps"]! as! Dictionary<String, Any>
+         let device = userInfo["device"] as? String
+         let user = userInfo["user"] as? String
+         let messageID = poster.laterMessage(message: "deny", title: "deny")
+         poster.postNotification(type: "background", jsonID: messageID, token: device!)
+         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [request.identifier])
+     }
+     
      completionHandler()
    }
    

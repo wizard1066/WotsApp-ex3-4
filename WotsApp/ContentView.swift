@@ -9,8 +9,7 @@
 import SwiftUI
 import Combine
 
-let grantPublisher = PassthroughSubject<Void, Never>()
-let laterPublisher = PassthroughSubject<Void, Never>()
+let alertPublisher = PassthroughSubject<(String, String), Never>()
 
 let poster = RemoteNotifications()
 let crypto = Crypto()
@@ -35,21 +34,24 @@ struct ContentView: View {
   @State var image = UIImage(imageLiteralResourceName: "dog")
   @State var message = ""
   
-  // code 2
   @State var sendTo = ""
   @State var address = ""
   @State var publicK:Data!
   @State var privateK:Data!
   
+  // code 1
+  
   @State var display3 = false
-  @State var showGrant = false
-  @State var showLater = false
+  @State var showAlert = false
   @State var selected2 = 0
+  @State var title = ""
+  @State var alertMessage = ""
+  @State var disableText = false
   
   @State var doubleToken:String!
   
   
-  // code 9
+  
   
   var body: some View {
     VStack(alignment: .center) {
@@ -62,17 +64,17 @@ struct ContentView: View {
         } else {
           print("no registration")
         }
-      }.onReceive(grantPublisher, perform: { (_) in
-        self.showGrant = true
-      }).onReceive(laterPublisher, perform: { (_) in
-        self.showLater = true
-      }).alert(isPresented:$showGrant) {
-        Alert(title: Text("New User"), message: Text("Grant"), dismissButton: .default(Text("Ok")))
-      }.alert(isPresented:$showLater) {
-        Alert(title: Text("New User"), message: Text("Later"), dismissButton: .default(Text("Ok")))
+      }.onReceive(alertPublisher, perform: { (content ) in
+        (self.title,self.alertMessage) = content
+        self.showAlert = true
+        if self.title == "later" || self.title == "deny"  {
+          self.disableText = true
+        } else {
+          self.disableText = false
+        }
+      }).alert(isPresented:$showAlert) {
+        Alert(title: Text(self.title), message: Text(self.alertMessage), dismissButton: .default(Text("Ok")))
       }
-      
-      
       // code 3
       .onReceive(cloud.searchPriPublisher) { (data) in
         if data != nil {
@@ -103,7 +105,6 @@ struct ContentView: View {
         self.display3 = true
       }
       
-
       
       // code for multiple owners one device
       if display3 {
@@ -127,9 +128,11 @@ struct ContentView: View {
         Spacer()
         
         TextField("NickName?", text: $nickName)
+          
           .multilineTextAlignment(.center)
           .textFieldStyle(RoundedBorderTextFieldStyle())
         TextField("Secret?", text: $secret)
+          
           .multilineTextAlignment(.center)
           .textFieldStyle(RoundedBorderTextFieldStyle())
         Image(images[index])
@@ -180,6 +183,7 @@ struct ContentView: View {
           let index = poster.saveMessage(message: crypted, title: self.nickName)
           poster.postNotification(type: "alert", jsonID: index, token: self.address)
         })
+        .disabled(disableText)
         .textFieldStyle(RoundedBorderTextFieldStyle())
         Spacer()
         Picker(selection: $selected, label: Text("")) {

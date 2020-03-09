@@ -24,6 +24,8 @@
 	<dict>
 		<key>NSExtensionAttributes</key>
 		<dict>
+			<key>UNnotificationExtensionDefaultContentHidden</key>
+			<true/>
 			<key>UNNotificationExtensionCategory</key>
 			<string>wotsapp</string>
 			<key>UNNotificationExtensionInitialContentSizeRatio</key>
