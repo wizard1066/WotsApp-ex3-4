@@ -78,8 +78,6 @@ struct ContentView: View {
         cloud.updateRex()
       })
       .onReceive(cloud.searchPriPublisher) { (data) in
-//        self.nextState = UserDefaults.standard.bool(forKey: "enabled_preference")
-//        print("next ",self.nextState)
         if data != nil  {
           self.user = data!
           self.image = UIImage(data: self.user!.image!)!
@@ -92,7 +90,6 @@ struct ContentView: View {
           crypto.savePrivateKey()
           UserDefaults.standard.set(self.secret, forKey: "secret")
           cloud.getPublicDirectory()
-//          UserDefaults.standard.set(false, forKey: "enabled_preference")
         } else {
           cloud.getPublicDirectory()
           self.display2 = true
