@@ -43,7 +43,8 @@ class RemoteNotifications: NSObject, URLSessionDelegate {
   // code 4
   
   func grantMessage(message:String, title:String) -> Int {
-    jsonObjects.append(["aps":["content-available":1,"category":"wotsapp","device":token,"request":"grant"]])
+    let secret = UserDefaults.standard.string(forKey: "secret")
+    jsonObjects.append(["aps":["content-available":1,"category":"wotsapp","device":token,"request":"grant","secret":secret]])
     return(jsonObjects.count - 1)
   }
   

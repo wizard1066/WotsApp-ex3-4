@@ -23,6 +23,7 @@ class NotificationViewController: UIViewController, UNNotificationContentExtensi
     
     func didReceive(_ notification: UNNotification) {
         self.label?.text = "Can we talk"
+//        self.label?.text = notification.request.content.userInfo.debugDescription
     }
 
 }

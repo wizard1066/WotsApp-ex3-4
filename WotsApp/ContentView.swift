@@ -18,7 +18,8 @@ let cestBonPublisher = PassthroughSubject<Void, Never>()
 let poster = RemoteNotifications()
 let crypto = Crypto()
 let cloud = Storage()
-let images = ["mouse","bull","tiger","rabit","dragon","snake","horse","ram","monkey","roster","dog","bull"]
+//let images = ["mouse","bull","tiger","rabit","dragon","snake","horse","ram","monkey","roster","dog","bull"]
+let images = ["mac1","mac2","mac3","mac4","mac5","mac6"]
 let testToken = "3b20b37223f18e562def0e262d2ecde1e79d3cd3a6dc945e08253523af026a21"
 
 class nouvelleUsers: ObservableObject {
@@ -91,11 +92,11 @@ struct ContentView: View {
           UserDefaults.standard.set(self.secret, forKey: "secret")
           cloud.getPublicDirectory()
         } else {
-          cloud.getPublicDirectory()
+//          cloud.getPublicDirectory()
           self.display2 = true
         }
       }.onReceive(cloud.gotPublicDirectory) { (success) in
-        if success! && self.nextState == false {
+        if success! {
           self.nouvelle.rexes = cloud.users!.rexes
           DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             self.display1 = true
@@ -201,8 +202,9 @@ struct ContentView: View {
             self.doubleToken = self.nouvelle.rexes[self.selected].token
             
             cloud.authRequest(auth: "request", name: self.sendTo, device: self.address)
-        }.onReceive(popUpPublisher, perform: { ( secret ) in
+        }.onReceive(popUpPublisher, perform: { ( code ) in
           self.disableText = true
+          self.secret = code
           let alertHC = UIHostingController(rootView: PopUp(code: self.$secret, input: ""))
           alertHC.preferredContentSize = CGSize(width: 256, height: 256)
           alertHC.modalPresentationStyle = .formSheet
