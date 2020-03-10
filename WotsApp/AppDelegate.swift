@@ -80,7 +80,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     if request == "deny" {
-      print("later ",token)
+      print("deny ",token)
       alertPublisher.send(("deny","deny"))
     }
     

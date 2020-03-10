@@ -79,6 +79,10 @@ class Storage: NSObject {
   }
   
   // code 3
+  
+  func clearLocalCopy() {
+    users?.rexes.removeAll()
+  }
 
   func searchPublic(_ token:String) {
     let predicate = NSPredicate(format: "token = %@", token)
@@ -101,6 +105,11 @@ class Storage: NSObject {
   }
   
   func searchPrivate(_ token:String) {
+    let escape = UserDefaults.standard.bool(forKey: "enabled_preference")
+    if escape {
+      DispatchQueue.main.async { self.searchPriPublisher.send(nil) }
+      return
+    }
     let predicate = NSPredicate(format: "token = %@", token)
     let query = CKQuery(recordType: "directory", predicate: predicate)
     privateDB.perform(query,
@@ -157,10 +166,12 @@ class Storage: NSObject {
                       for result in results {
                         let name = result.object(forKey: "nickName") as? String
                         let publicK = result.object(forKey: "publicK") as? Data
-                        let token = result.object(forKey: "token") as? String
+                        let DBtoken = result.object(forKey: "token") as? String
                         let recordID = result.recordID
-                        let newRex = rex(id: recordID, token: token, nickName: name, image: nil, secret: nil, publicK: publicK, privateK: nil)
-                        self!.users!.rexes.append(newRex)
+                        if DBtoken != token {
+                          let newRex = rex(id: recordID, token: DBtoken, nickName: name, image: nil, secret: nil, publicK: publicK, privateK: nil)
+                          self!.users!.rexes.append(newRex)
+                        }
                       }
                       DispatchQueue.main.async { self!.gotPublicDirectory.send(true) }
     }
@@ -229,7 +240,6 @@ class Storage: NSObject {
     }
     
     func saveToPrivate(user: rex) {
-      
         let record = CKRecord(recordType: "directory")
         record.setValue(user.publicK, forKey: "publicK")
         record.setValue(user.nickName, forKey: "nickName")
@@ -251,8 +261,9 @@ class Storage: NSObject {
           }
         }
         self.privateDB.add(saveRecordsOperation)
-      
     }
+    
+    
     
     // code 3
     
@@ -270,24 +281,31 @@ class Storage: NSObject {
                           guard let results = results else { return }
                           for result in results {
                             print("results ",result)
-                            let authorized = result.object(forKey: "authorized") as? String
+                            let authorized = result.object(forKey: "auth") as? String
                             if authorized == nil || authorized == "" {
-                              self!.authRequest2(auth: auth, name: name, device: device)
+                              self!.authRequest2(auth: auth, name: name, device: device, record: result.recordID)
                             } else {
                               DispatchQueue.main.async { self!.shortProtocol.send(token!) }
                             }
                           }
                           if results.count == 0 {
                             print("no name ",name)
-                            self!.authRequest2(auth: auth, name: name, device: device)
+                            self!.authRequest2(auth: auth, name: name, device: device, record: nil)
                           }
         }
       }
       
       // code 4
       
-      func authRequest2(auth:String, name: String, device:String) {
+      func authRequest2(auth:String, name: String, device:String, record: CKRecord.ID?) {
         // Search the directory
+        UserDefaults.standard.set(name, forKey: "name")
+        UserDefaults.standard.set(device, forKey: "token")
+        if record != nil {
+          UserDefaults.standard.set(record?.recordName, forKey: "auth")
+        } else {
+          UserDefaults.standard.set("nil", forKey: "auth")
+        }
         print("****** auth Request 2 *********")
         let predicate = NSPredicate(format: "nickName = %@", name)
         let query = CKQuery(recordType: "directory", predicate: predicate)
@@ -316,28 +334,47 @@ class Storage: NSObject {
     
     
     
-    func fetchPublicRecord(_ recordID: CKRecord.ID, token: String) -> Void
-     {
-       publicDB.fetch(withRecordID: recordID,
+  func updateRex() {
+    let record2D = UserDefaults.standard.string(forKey: "auth")
+    var recordID: CKRecord.ID!
+    if record2D != "nil" {
+      recordID = CKRecord.ID(recordName: record2D!)
+      privateDB.fetch(withRecordID: recordID,
                       completionHandler: ({record, error in
-                       if let error = error {
-                        DispatchQueue.main.async { self.errorPublisher.send(error.localizedDescription) }
-                         return
-                       } else {
-                         if record != nil {
-                           let name = record!.object(forKey: "nickName") as? String
-                           let secret = record!.object(forKey: "secret") as? String
-                           let recordID = record!.recordID
-                           let newRex = rex(id: recordID, token: nil, nickName: name, image: nil, secret: secret, publicK: nil, privateK: nil)
-                           self.users!.rexes.append(newRex)
-                          DispatchQueue.main.async { self.fetchPublisher.send(true) }
-                         } else {
-                          DispatchQueue.main.async { self.fetchPublisher.send(false) }
-                         }
-                       }
+                        if let error = error {
+                          DispatchQueue.main.async { self.errorPublisher.send(error.localizedDescription) }
+                          return
+                        } else {
+                          if record != nil {
+                            self.updateRex2(record: record!)
+                          }
+                        }
                       }))
-       }
-    
-    
+    } else {
+      print("no rexex!")
+      let name2D = UserDefaults.standard.string(forKey: "name")
+      let token2D = UserDefaults.standard.string(forKey: "token")
+      let record = CKRecord(recordType: "directory")
+      record.setValue(name2D, forKey: "nickName")
+      record.setValue(token2D, forKey: "token")
+      self.updateRex2(record: record)
+    }
+  }
+  
+  func updateRex2(record: CKRecord) {
+      record.setValue("cestBon", forKey: "auth")
+      let saveRecordsOperation = CKModifyRecordsOperation()
+      
+      saveRecordsOperation.recordsToSave = [record]
+      saveRecordsOperation.savePolicy = .allKeys
+      saveRecordsOperation.modifyRecordsCompletionBlock = { savedRecords,deletedRecordID, error in
+        if error != nil {
+          DispatchQueue.main.async { self.errorPublisher.send(error?.localizedDescription) }
+        } else {
+          print("updated db")
+        }
+      }
+      self.privateDB.add(saveRecordsOperation)
+  }
 }
 

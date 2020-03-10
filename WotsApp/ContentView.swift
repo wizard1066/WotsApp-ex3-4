@@ -75,11 +75,12 @@ struct ContentView: View {
         Alert(title: Text(self.title), message: Text(self.alertMessage), dismissButton: .default(Text("Ok")))
       }.onReceive(cestBonPublisher, perform: { (_) in
         self.disableText = false
+        cloud.updateRex()
       })
       .onReceive(cloud.searchPriPublisher) { (data) in
-        self.nextState = UserDefaults.standard.bool(forKey: "enabled_preference")
-        print("next ",self.nextState)
-        if data != nil && self.nextState == false {
+//        self.nextState = UserDefaults.standard.bool(forKey: "enabled_preference")
+//        print("next ",self.nextState)
+        if data != nil  {
           self.user = data!
           self.image = UIImage(data: self.user!.image!)!
           self.nickName = self.user!.nickName!
@@ -91,8 +92,9 @@ struct ContentView: View {
           crypto.savePrivateKey()
           UserDefaults.standard.set(self.secret, forKey: "secret")
           cloud.getPublicDirectory()
+//          UserDefaults.standard.set(false, forKey: "enabled_preference")
         } else {
-//          cloud.getPublicDirectory()
+          cloud.getPublicDirectory()
           self.display2 = true
         }
       }.onReceive(cloud.gotPublicDirectory) { (success) in
@@ -202,8 +204,8 @@ struct ContentView: View {
             self.doubleToken = self.nouvelle.rexes[self.selected].token
             
             cloud.authRequest(auth: "request", name: self.sendTo, device: self.address)
-            // code 4
         }.onReceive(popUpPublisher, perform: { ( secret ) in
+          self.disableText = true
           let alertHC = UIHostingController(rootView: PopUp(code: self.$secret, input: ""))
           alertHC.preferredContentSize = CGSize(width: 256, height: 256)
           alertHC.modalPresentationStyle = .formSheet
