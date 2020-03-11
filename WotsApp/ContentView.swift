@@ -15,6 +15,7 @@ let alertPublisher = PassthroughSubject<(String, String), Never>()
 let popUpPublisher = PassthroughSubject<String, Never>()
 let cestBonPublisher = PassthroughSubject<Void, Never>()
 
+
 let poster = RemoteNotifications()
 let crypto = Crypto()
 let cloud = Storage()
@@ -54,7 +55,8 @@ struct ContentView: View {
   @State var nextState = false
   
   @State var doubleToken:String!
-
+  @State var alpha: Double = 65
+  @State var alphaToShow: String = "A"
   
   
   var body: some View {
@@ -65,10 +67,16 @@ struct ContentView: View {
         if token != nil {
           print("ok")
           cloud.searchPrivate(token)
+//          fakeAccounts()
         } else {
           print("no registration")
         }
-      }.onReceive(alertPublisher, perform: { (content ) in
+      }.onReceive(cloud.errorPublisher, perform: { ( error ) in
+        self.title = ((error as? errorAlert)?.title)!
+        self.alertMessage = ((error as? errorAlert)?.message)!
+        self.showAlert = true
+      })
+      .onReceive(alertPublisher, perform: { (content ) in
         (self.title,self.alertMessage) = content
         self.showAlert = true
         self.disableText = true
@@ -116,8 +124,14 @@ struct ContentView: View {
             self.alertMessage = "Sorry, no network, no work!"
             self.title = "STOP"
             self.showAlert = true
+          } else {
+            cloud.cloudStatus()
           }
         }
+      }.onReceive(cloud.cloudPublisher) { ( message ) in
+        self.alertMessage = message
+        self.title = "iCloud"
+        self.showAlert = true
       }
       
       
@@ -178,14 +192,8 @@ struct ContentView: View {
             self.display2 = false
             self.display1 = true
           }
-        }.onAppear(perform: {
-          cloud.cloudStatus()
-        })
-        .onReceive(cloud.cloudPublisher) { ( message ) in
-          self.alertMessage = message
-          self.title = "iCloud"
-          self.showAlert = true
         }
+        
         Spacer()
       }
       
@@ -234,6 +242,25 @@ struct ContentView: View {
         .alert(isPresented:$showAlert2) {
           Alert(title: Text("New User"), message: Text("Saved"), dismissButton: .default(Text("Ok")))
         }
+        // code 6
+        
+        Slider(value: $alpha, in: 65...90,step: 1,onEditingChanged: { data in
+          self.alphaToShow = String(Character(UnicodeScalar(Int(self.alpha))!))
+
+          DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+          cloud.getPublicDirectoryV4(cursor: nil, begins: self.alphaToShow)
+        }
+        }).padding()
+        Text(alphaToShow).onReceive(cloud.directoryPublisher) { (_) in
+          DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.display1 = false
+            self.nouvelle.rexes = cloud.users!.rexes
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+              self.display1 = true
+            }
+          }
+        }
+        Spacer()
       }
     }
   }
@@ -300,29 +327,37 @@ func netMonitoringStopped() {
   print("Stopped monitoring")
 }
 
+//extension Character {
+//    var isAscii: Bool {
+//        return unicodeScalars.allSatisfy { $0.isASCII }
+//    }
+//    var ascii: UInt32? {
+//        return isAscii ? unicodeScalars.first?.value : nil
+//    }
+//}
 
 func fakeAccounts() {
-    let sPrivateKey = crypto.getPrivateKey()
-    let sPublicK = crypto.getPublicKey()
+//    let sPrivateKey = crypto.getPrivateKey()
+//    let sPublicK = crypto.getPublicKey()
     // Star Wars Charater List
-    let users = ["Luke","HanSolo","Leia","Rey","Yoda","Obi-Wan","Poe","Qui-Gon","Rose"]
+    let users = ["Andy","Alex","Baz","Brian","Cat","Carol","Dick","Dan","Ed","Earl","Fred","Frank","Gavin","Grant","Henry","Hudson","India","Irene","Jack","Jude","Kelvin","Kez","Lois","Leo","Max","Mark","Nick","Noah","Pete","Piere","Quint","Roman","Ryder","Steve","Sid","Tony","Taz","Uma","Victor","Valeria","Warren","Walter","Xena","Yosef","Zoey","Zack","Zeke","Zara"]
     var index = 0
     for user in users {
       let success = crypto.generateKeyPair(keySize: 2048, privateTag: "ch.cqd.WotsApp", publicTag: "ch.cqd.WotsApp")
       if success {
         let privateK = crypto.getPrivateKey()
         let publicK = crypto.getPublicKey()
-        let image = UIImage(named: images[index])!
+        let image = UIImage(named: images[0])!
         let imagePNG = image.pngData()!
-        index = index + 1
-        let newRex = rex(id: nil, token: token, nickName: user, image: imagePNG, secret: "r2d2", publicK: publicK, privateK: privateK)
+        let newRex = rex(id: nil, token: token, nickName: user, image: imagePNG, secret: "1234", publicK: publicK, privateK: privateK)
         cloud.users!.rexes.append(newRex)
-        cloud.saveRex(user: newRex)
+        cloud.saveToPublic(user: newRex)
+        print("user ",user)
+        sleep(1)
       }
-      
     }
-    crypto.putPublicKey(publicK: sPublicK!, keySize: 2048, publicTag: "ch.cqd.WotsApp")
-    crypto.putPrivateKey(privateK: sPrivateKey!, keySize: 2048, privateTag: "ch.cqd.WotsApp")
+//    crypto.putPublicKey(publicK: sPublicK!, keySize: 2048, publicTag: "ch.cqd.WotsApp")
+//    crypto.putPrivateKey(privateK: sPrivateKey!, keySize: 2048, privateTag: "ch.cqd.WotsApp")
 }
 
 
