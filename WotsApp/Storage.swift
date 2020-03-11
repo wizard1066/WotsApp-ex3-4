@@ -64,6 +64,7 @@ class Storage: NSObject {
   
   let searchPri2Publisher = PassthroughSubject<[rex]?, Never>()
   let shortProtocol = PassthroughSubject<String, Never>()
+  let cloudPublisher = PassthroughSubject<String, Never>()
 
   var publicDB: CKDatabase!
   var privateDB: CKDatabase!
@@ -78,11 +79,27 @@ class Storage: NSObject {
     users = newUsers()
   }
   
-  // code 3
+  // code 2
   
-  func clearLocalCopy() {
-    users?.rexes.removeAll()
+  func cloudStatus() {
+    CKContainer.default().accountStatus { (accountStatus, error) in
+      var message : String
+      switch accountStatus {
+      case .available:
+        message = "iCloud will be Used"
+      case .noAccount:
+        message =  "Sorry you need to login into iCloud"
+      case .restricted:
+        message = "iCloud access restricted"
+      case .couldNotDetermine:
+        message = "Unable to determine iCloud status"
+      default:
+        message =  "new iCloud error?"
+      }
+      DispatchQueue.main.async { self.cloudPublisher.send(message) }
+    }
   }
+  
 
   func searchPublic(_ token:String) {
     let predicate = NSPredicate(format: "token = %@", token)

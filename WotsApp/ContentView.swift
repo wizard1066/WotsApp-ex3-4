@@ -105,6 +105,19 @@ struct ContentView: View {
       }.onReceive(cloud.searchPri2Publisher) { (data) in
         self.nouvelle.rexes = data!
         self.display3 = true
+      }.onAppear {
+        let network = Connect.shared
+        network.startMonitoring()
+        network.netStatusChangeHandler = netMonitoring
+        network.didStartMonitoringHandler = netMonitoringStarted
+        network.didStopMonitoringHandler = netMonitoringStopped
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+          if !network.isConnected {
+            self.alertMessage = "Sorry, no network, no work!"
+            self.title = "STOP"
+            self.showAlert = true
+          }
+        }
       }
       
       
@@ -165,6 +178,13 @@ struct ContentView: View {
             self.display2 = false
             self.display1 = true
           }
+        }.onAppear(perform: {
+          cloud.cloudStatus()
+        })
+        .onReceive(cloud.cloudPublisher) { ( message ) in
+          self.alertMessage = message
+          self.title = "iCloud"
+          self.showAlert = true
         }
         Spacer()
       }
@@ -267,6 +287,19 @@ struct PopUp : View {
     }
   }
 }
+
+func netMonitoring() {
+  print("network monitored")
+}
+
+func netMonitoringStarted() {
+  print("Started monitoring")
+}
+
+func netMonitoringStopped() {
+  print("Stopped monitoring")
+}
+
 
 func fakeAccounts() {
     let sPrivateKey = crypto.getPrivateKey()
