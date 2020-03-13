@@ -71,6 +71,7 @@ class Storage: NSObject {
   let shortProtocol = PassthroughSubject<String, Never>()
   let cloudPublisher = PassthroughSubject<String, Never>()
   let directoryPublisher = PassthroughSubject<Void, Never>()
+  let returnRecordPublisher = PassthroughSubject<(String,String),Never>()
 
   var publicDB: CKDatabase!
   var privateDB: CKDatabase!
@@ -160,6 +161,65 @@ class Storage: NSObject {
     }
   }
   
+  // code 8
+  
+  func searchNReturn(_ token:String) {
+  let predicate = NSPredicate(format: "token = %@", token)
+      let query = CKQuery(recordType: "directory", predicate: predicate)
+      privateDB.perform(query,
+                       inZoneWith: CKRecordZone.default().zoneID) { [weak self] results, error in
+                        guard let _ = self else { return }
+                        if let error = error {
+  //                        DispatchQueue.main.async { self!.errorPublisher.send(error.localizedDescription) }
+                          return
+                        }
+                        guard let results = results else { return }
+                        if results.count == 1 {
+                          let link = results.first?.object(forKey:"linked") as? String
+                          DispatchQueue.main.async { self!.returnRecordPublisher.send(((results.first?.recordID.recordName)!,link!)) }
+                        }
+                          print("error")
+                        }
+                        
+    
+  }
+  
+  func deleteRecords(_ recordIDs:[CKRecord.ID]) {
+    let deleteRecordsOperation = CKModifyRecordsOperation()
+    deleteRecordsOperation.recordsToSave = []
+    deleteRecordsOperation.recordIDsToDelete = recordIDs
+    deleteRecordsOperation.modifyRecordsCompletionBlock = { savedRecords,deletedRecordID, error in
+      if error != nil {
+        print("error ",error)
+        //          DispatchQueue.main.async { self.errorPublisher.send(error?.localizedDescription) }
+      } else {
+        print("updated db")
+      }
+    }
+    self.publicDB.add(deleteRecordsOperation)
+  }
+  
+  func deleteRecord(_ recordID:String, db:String) {
+    let record2D = CKRecord.ID(recordName: recordID)
+    let deleteRecordsOperation = CKModifyRecordsOperation()
+    deleteRecordsOperation.recordsToSave = []
+    deleteRecordsOperation.recordIDsToDelete = [record2D]
+    deleteRecordsOperation.modifyRecordsCompletionBlock = { savedRecords,deletedRecordID, error in
+      if error != nil {
+        DispatchQueue.main.async { self.errorPublisher.send(error!.localizedDescription) }
+      } else {
+        print("updated db")
+      }
+    }
+    if db == "private" {
+      self.privateDB.add(deleteRecordsOperation)
+    } else {
+      self.publicDB.add(deleteRecordsOperation)
+    }
+  }
+  
+  // code 8
+  
   func setRecord(record: CKRecord) -> rex {
     
     let name = record.object(forKey: "nickName") as? String
@@ -226,6 +286,7 @@ class Storage: NSObject {
   // code 3
   
   func getPublicDirectoryV2(cursor: CKQueryOperation.Cursor?) {
+    var newUsers:[rex] = []
     let predicate = NSPredicate(value: true)
     let query = CKQuery(recordType: "directory", predicate: predicate)
     query.sortDescriptors = [NSSortDescriptor(key: "nickName", ascending: true)]
@@ -237,7 +298,7 @@ class Storage: NSObject {
     }
     queryOp.recordFetchedBlock = { record in
       let newRex = self.setRecord(record: record)
-      self.users!.rexes.append(newRex)
+      newUsers.append(newRex)
     }
     queryOp.queryCompletionBlock = { cursor, error in
       if cursor != nil {
@@ -249,43 +310,48 @@ class Storage: NSObject {
   
   // code 4
   
-  var cursor2G: CKQueryOperation.Cursor?
-  
-  func getPublicDirectoryV3(cursor: CKQueryOperation.Cursor?) {
-    let predicate = NSPredicate(value: true)
-    let query = CKQuery(recordType: "directory", predicate: predicate)
-    query.sortDescriptors = [NSSortDescriptor(key: "nickName", ascending: true)]
-    var queryOp: CKQueryOperation!
-    queryOp.resultsLimit = 80
-    if cursor == nil {
-      queryOp = CKQueryOperation(query: query)
-    } else {
-      queryOp = CKQueryOperation(cursor: cursor!)
-    }
-    queryOp.recordFetchedBlock = { record in
-      let newRex = self.setRecord(record: record)
-      self.users!.rexes.append(newRex)
-    }
-    queryOp.queryCompletionBlock = { cursor, error in
-      self.cursor2G = cursor
-    }
-    publicDB.add(queryOp)
-  }
-  
-  func getPublicDirectoryV3bis() {
-    if cursor2G != nil {
-      getPublicDirectoryV3(cursor: cursor2G)
-    }
-  }
-  
-  func tearDown() {
-    self.users!.rexes.removeAll()
-  }
+//  var cursor2G: CKQueryOperation.Cursor?
+//
+//  func getPublicDirectoryV3(cursor: CKQueryOperation.Cursor?) {
+//    let predicate = NSPredicate(value: true)
+//    let query = CKQuery(recordType: "directory", predicate: predicate)
+//    query.sortDescriptors = [NSSortDescriptor(key: "nickName", ascending: true)]
+//    var queryOp: CKQueryOperation!
+//    queryOp.resultsLimit = 80
+//    if cursor == nil {
+//      queryOp = CKQueryOperation(query: query)
+//    } else {
+//      queryOp = CKQueryOperation(cursor: cursor!)
+//    }
+//    queryOp.recordFetchedBlock = { record in
+//      let newRex = self.setRecord(record: record)
+//      self.users!.rexes.append(newRex)
+//    }
+//    queryOp.queryCompletionBlock = { cursor, error in
+//      self.cursor2G = cursor
+//    }
+//    publicDB.add(queryOp)
+//  }
+//
+//  func getPublicDirectoryV3bis() {
+//    if cursor2G != nil {
+//      getPublicDirectoryV3(cursor: cursor2G)
+//    }
+//  }
+//
+//  func tearDown() {
+//    self.users!.rexes.removeAll()
+//  }
+
   // code 5
-  func getPublicDirectoryV4(cursor: CKQueryOperation.Cursor?, begins:String) {
+  func getPublicDirectoryV4(cursor: CKQueryOperation.Cursor?, begins:String?) {
     var newUsers:[rex] = []
-    let predicate = NSPredicate(format: "nickName BEGINSWITH %@", begins)
-    print("predicate ",predicate)
+    var predicate:NSPredicate!
+    if begins != nil {
+      predicate = NSPredicate(format: "nickName BEGINSWITH %@", begins!)
+    } else {
+      predicate = NSPredicate(value: true)
+    }
     let query = CKQuery(recordType: "directory", predicate: predicate)
     query.sortDescriptors = [NSSortDescriptor(key: "nickName", ascending: true)]
     var queryOp: CKQueryOperation!
@@ -301,18 +367,27 @@ class Storage: NSObject {
       newUsers.append(newRex)
     }
     queryOp.queryCompletionBlock = { cursor, error in
-      self.cursor2G = cursor
-      self.users!.rexes = newUsers
-      DispatchQueue.main.async { self.directoryPublisher.send() }
+      if cursor != nil {
+        self.getPublicDirectoryV4(cursor: cursor, begins: begins)
+      } else {
+        self.users!.rexes = newUsers
+        // ********** code to cleanup **********
+//        for record in cloud.users!.rexes {
+//          self.deleteID.append(record.id!)
+//        }
+//        self.deleteRecords(self.deleteID)
+        // ********** end cleanup code **********
+        DispatchQueue.main.async { self.directoryPublisher.send() }
+      }
     }
     publicDB.add(queryOp)
   }
   
-  func getPublicDirectoryV4bis() {
-    if cursor2G != nil {
-      getPublicDirectoryV3(cursor: cursor2G)
-    }
-  }
+//  func getPublicDirectoryV4bis(begins: String) {
+//    if cursor2G != nil {
+//      getPublicDirectoryV4(cursor: cursor2G, begins: begins)
+//    }
+//  }
   
   var semaphore = DispatchSemaphore(value: 1)
   
@@ -324,123 +399,64 @@ class Storage: NSObject {
     }
   }
   
-
+  var deleteID:[CKRecord.ID] = []
   
-  func reportError(error: CKError) {
-    var error2S:errorAlert = errorAlert(title: "", message: "")
+  func cleanUp() {
+    getPublicDirectoryV4(cursor: nil, begins: nil)
+  }
+  
+  func ckErrors(error: CKError) {
     switch error.code {
-      case .alreadyShared:
-        error2S = errorAlert(title: "iCloud alreadyShared", message: error.localizedDescription)
-        break
-      case .assetFileModified:
-        error2S = errorAlert(title: "iCloud assetFileModified", message: error.localizedDescription)
-        break
-      case .assetFileNotFound:
-        error2S = errorAlert(title: "iCloud assetFileNotFound", message: error.localizedDescription)
-        break
-      case .assetNotAvailable:
-        error2S = errorAlert(title: "iCloud assetNotAvailable", message: error.localizedDescription)
-        break
-      case .badContainer:
-        error2S = errorAlert(title: "iCloud badContainer", message: error.localizedDescription)
-        break
-      case .badDatabase:
-        error2S = errorAlert(title: "iCloud badDatabase", message: error.localizedDescription)
-        break
-      case .batchRequestFailed:
-        error2S = errorAlert(title: "iCloud batchRequestFailed", message: error.localizedDescription)
-        break
-      case .changeTokenExpired:
-        error2S = errorAlert(title: "iCloud changeTokenExpired", message: error.localizedDescription)
-        break
-      case .constraintViolation:
-        error2S = errorAlert(title: "iCloud constraintViolation", message: error.localizedDescription)
-        break
-      case .incompatibleVersion:
-        error2S = errorAlert(title: "iCloud incompatibleVersion", message: error.localizedDescription)
-        break
-      case .internalError:
-        error2S = errorAlert(title: "iCloud internalError", message: error.localizedDescription)
-        break
-      case .invalidArguments:
-        error2S = errorAlert(title: "iCloud invalidArguments", message: error.localizedDescription)
-        break
-      case .limitExceeded:
-        error2S = errorAlert(title: "iCloud limitExceeded", message: error.localizedDescription)
-        break
-      case .managedAccountRestricted:
-        error2S = errorAlert(title: "iCloud managedAccountRestricted", message: error.localizedDescription)
-        break
-      case .missingEntitlement:
-        error2S = errorAlert(title: "iCloud missingEntitlement", message: error.localizedDescription)
-        break
-      case .networkFailure:
-        error2S = errorAlert(title: "iCloud networkFailure", message: error.localizedDescription)
-        break
-      case .networkUnavailable:
-        error2S = errorAlert(title: "iCloud networkUnavailable", message: error.localizedDescription)
-        break
-      case .notAuthenticated:
-        error2S = errorAlert(title: "iCloud notAuthenticated", message: error.localizedDescription)
-        break
-      case .operationCancelled:
-        error2S = errorAlert(title: "iCloud operationCancelled", message: error.localizedDescription)
-        break
-      case .partialFailure:
-        error2S = errorAlert(title: "iCloud partialFailure", message: error.localizedDescription)
-        break
-      case .participantMayNeedVerification:
-        error2S = errorAlert(title: "iCloud participantMayNeedVerification", message: error.localizedDescription)
-        break
-      case .permissionFailure:
-        error2S = errorAlert(title: "iCloud permissionFailure", message: error.localizedDescription)
-        break
-      case .quotaExceeded:
-        error2S = errorAlert(title: "iCloud quotaExceeded", message: error.localizedDescription)
-        break
-      case .referenceViolation:
-        error2S = errorAlert(title: "iCloud referenceViolation", message: error.localizedDescription)
-        break
-      case .serverRecordChanged:
-        error2S = errorAlert(title: "iCloud serverRecordChanged", message: error.localizedDescription)
-        break
-      case .serverRejectedRequest:
-        error2S = errorAlert(title: "iCloud serverRejectedRequest", message: error.localizedDescription)
-        break
-      case .serverResponseLost:
-        error2S = errorAlert(title: "iCloud serverResponseLost", message: error.localizedDescription)
-        break
-      case .serviceUnavailable:
-        error2S = errorAlert(title: "iCloud serviceUnavailable", message: error.localizedDescription)
-        break
-      case .tooManyParticipants:
-        error2S = errorAlert(title: "iCloud tooManyParticipants", message: error.localizedDescription)
-        break
-      case .unknownItem:
-        error2S = errorAlert(title: "iCloud unknownItem", message: error.localizedDescription)
-        break
-      case .userDeletedZone:
-        error2S = errorAlert(title: "iCloud userDeletedZone", message: error.localizedDescription)
-        break
-      case .zoneBusy:
-        error2S = errorAlert(title: "iCloud zoneBusy", message: error.localizedDescription)
-        break
-      case .zoneNotFound:
-        error2S = errorAlert(title: "iCloud zoneNotFound", message: error.localizedDescription)
-        break
+      case .alreadyShared: break
+      case .assetFileModified: break
+      case .assetFileNotFound: break
+      case .assetNotAvailable: break
+      case .badContainer: break
+      case .badDatabase: break
+      case .batchRequestFailed: break
+      case .changeTokenExpired: break
+      case .constraintViolation: break
+      case .incompatibleVersion: break
+      case .internalError: break
+      case .invalidArguments: break
+      case .limitExceeded: break
+      case .managedAccountRestricted: break
+      case .missingEntitlement: break
+      case .networkFailure: break
+      case .networkUnavailable: break
+      case .notAuthenticated: break
+      case .operationCancelled: break
+      case .partialFailure: break
+      case .participantMayNeedVerification: break
+      case .permissionFailure: break
+      case .quotaExceeded: break
+      case .referenceViolation: break
+      case .serverRecordChanged: break
+      case .serverRejectedRequest: break
+      case .serverResponseLost: break
+      case .serviceUnavailable: break
+      case .tooManyParticipants: break
+      case .unknownItem: break
+      case .userDeletedZone: break
+      case .zoneBusy: break
+      case .zoneNotFound: break
       default:
         break
     }
 //    DispatchQueue.main.async { self.errorPublisher.send(error2S) }
   }
   
+  
+  
   func saveRex(user: rex) {
     saveToPublic(user: user)
     saveToPrivate(user: user)
   }
+  
+  // code 9
     
     func saveToPublic(user: rex) {
-   
+        self.semaphore.wait()
         let record = CKRecord(recordType: "directory")
         record.setValue(user.publicK, forKey: "publicK")
         record.setValue(user.nickName, forKey: "nickName")
@@ -453,8 +469,9 @@ class Storage: NSObject {
             print("error ",error)
 //            DispatchQueue.main.async { self.errorPublisher.send(error?.localizedDescription) }
           } else {
-            self.semaphore.wait()
+            
             self.ops = self.ops + 1
+            self.xlink = savedRecords!.first?.recordID.recordName
             self.semaphore.signal()
           }
         }
@@ -462,7 +479,10 @@ class Storage: NSObject {
       
     }
     
+    private var xlink: String!
+    
     func saveToPrivate(user: rex) {
+        self.semaphore.wait()
         let record = CKRecord(recordType: "directory")
         record.setValue(user.publicK, forKey: "publicK")
         record.setValue(user.nickName, forKey: "nickName")
@@ -470,6 +490,7 @@ class Storage: NSObject {
         record.setValue(user.privateK, forKey: "privateK")
         record.setValue(user.secret, forKey: "secret")
         record.setValue(user.image, forKey: "image")
+        record.setValue(xlink, forKey: "linked")
         let saveRecordsOperation = CKModifyRecordsOperation()
         
         saveRecordsOperation.recordsToSave = [record]
@@ -478,7 +499,7 @@ class Storage: NSObject {
           if error != nil {
 //            DispatchQueue.main.async { self.errorPublisher.send(error?.localizedDescription) }
           } else {
-            self.semaphore.wait()
+            
             self.ops = self.ops + 1
             self.semaphore.signal()
           }

@@ -57,6 +57,12 @@ struct ContentView: View {
   @State var doubleToken:String!
   @State var alpha: Double = 65
   @State var alphaToShow: String = "A"
+  @State var display4 = true
+  @State var showConfirm = false
+  @State var privateLink = ""
+  @State var publicLink = ""
+  
+  @State var group = ""
   
   
   var body: some View {
@@ -68,6 +74,7 @@ struct ContentView: View {
           print("ok")
           cloud.searchPrivate(token)
 //          fakeAccounts()
+          crypto.md5hash(qbfString: "The quick brown fox jumps over the lazy dog.")
         } else {
           print("no registration")
         }
@@ -99,6 +106,7 @@ struct ContentView: View {
           crypto.savePrivateKey()
           UserDefaults.standard.set(self.secret, forKey: "secret")
           cloud.getPublicDirectory()
+          crypto.md5hash(qbfString: "The quick brown fox jumps over the lazy dog.")
         } else {
 //          cloud.getPublicDirectory()
           self.display2 = true
@@ -126,6 +134,7 @@ struct ContentView: View {
             self.showAlert = true
           } else {
             cloud.cloudStatus()
+//            cloud.cleanUp()
           }
         }
       }.onReceive(cloud.cloudPublisher) { ( message ) in
@@ -155,13 +164,31 @@ struct ContentView: View {
         Spacer()
         
         TextField("NickName?", text: $nickName)
-          
           .multilineTextAlignment(.center)
           .textFieldStyle(RoundedBorderTextFieldStyle())
+          .disabled(nickName.count > 15)
+          .simultaneousGesture(LongPressGesture()
+            .onEnded({bool in
+                if bool {
+                  print("Long!")
+                }
+                })
+                )
+          
         TextField("Secret?", text: $secret)
-          
           .multilineTextAlignment(.center)
           .textFieldStyle(RoundedBorderTextFieldStyle())
+          .disabled(secret.count > 15)
+        TextField("Group?", text: $group, onEditingChanged: {_ in
+          if self.group.first == "a" {
+            self.group = "b"
+          }
+        }, onCommit: {
+          print("group ",self.group)
+        })
+          .multilineTextAlignment(.center)
+          .textFieldStyle(RoundedBorderTextFieldStyle())
+          .disabled(group.count > 15)
         Image(images[index])
           .resizable()
           .frame(width: 128.0, height: 128.0)
@@ -179,7 +206,7 @@ struct ContentView: View {
             self.image = UIImage(named: images[self.index])!
             let imagePNG = self.image.pngData()!
             let newRex = rex(id: nil, token: token, nickName: self.nickName, image: imagePNG, secret: self.secret, publicK: self.publicK, privateK: self.privateK)
-            // fuck
+            
             cloud.saveRex(user: newRex)
           }
         }) {
@@ -203,6 +230,23 @@ struct ContentView: View {
         Image(uiImage: image)
           .resizable()
           .frame(width: 128.0, height: 128.0)
+          // code 9
+          .allowsHitTesting(true)
+          .onLongPressGesture {
+          cloud.searchNReturn(token)
+        }.onReceive(cloud.returnRecordPublisher) { ( link ) in
+                  self.showConfirm = true
+                  (self.privateLink,self.publicLink) = link
+                }.alert(isPresented:$showConfirm) {
+            Alert(title: Text("Are you sure you want to delete this?"), message: Text("There is no undo"), primaryButton: .destructive(Text("Delete")) {
+              cloud.deleteRecord(self.privateLink,db: "private")
+              cloud.deleteRecord(self.publicLink,db: "public")
+              self.display1 = false
+            }, secondaryButton: .cancel() {
+              self.display1 = true
+            })
+        }
+        
         Text("Sender: " + nickName)
         Text("Sending: " + sendTo)
         // code 3
@@ -216,51 +260,53 @@ struct ContentView: View {
         .textFieldStyle(RoundedBorderTextFieldStyle())
 
         Spacer()
-        Picker(selection: $selected, label: Text("")) {
-          ForEach(0 ..< self.nouvelle.rexes.count) {dix in
-            Text(self.nouvelle.rexes[dix].nickName!)
-          }
-        }.pickerStyle(WheelPickerStyle())
-          .padding()
-          .onTapGesture {
-            self.sendTo = self.nouvelle.rexes[self.selected].nickName!
-            self.address = self.nouvelle.rexes[self.selected].token!
-            self.publicK = self.nouvelle.rexes[self.selected].publicK
-            self.privateK = self.nouvelle.rexes[self.selected].privateK
-            self.doubleToken = self.nouvelle.rexes[self.selected].token
+        if display4 {
+          Picker(selection: $selected, label: Text("")) {
+            ForEach(0 ..< self.nouvelle.rexes.count) {dix in
+              Text(self.nouvelle.rexes[dix].nickName!)
+            }
+          }.pickerStyle(WheelPickerStyle())
+            .padding()
+            .onTapGesture {
+              self.sendTo = self.nouvelle.rexes[self.selected].nickName!
+              self.address = self.nouvelle.rexes[self.selected].token!
+              self.publicK = self.nouvelle.rexes[self.selected].publicK
+              self.privateK = self.nouvelle.rexes[self.selected].privateK
+              self.doubleToken = self.nouvelle.rexes[self.selected].token
+              
+              cloud.authRequest(auth: "request", name: self.sendTo, device: self.address)
+          }.onReceive(popUpPublisher, perform: { ( code ) in
+            self.disableText = true
+            self.secret = code
+            let alertHC = UIHostingController(rootView: PopUp(code: self.$secret, input: ""))
+            alertHC.preferredContentSize = CGSize(width: 256, height: 256)
+            alertHC.modalPresentationStyle = .formSheet
             
-            cloud.authRequest(auth: "request", name: self.sendTo, device: self.address)
-        }.onReceive(popUpPublisher, perform: { ( code ) in
-          self.disableText = true
-          self.secret = code
-          let alertHC = UIHostingController(rootView: PopUp(code: self.$secret, input: ""))
-          alertHC.preferredContentSize = CGSize(width: 256, height: 256)
-          alertHC.modalPresentationStyle = .formSheet
+            UIApplication.shared.windows[0].rootViewController?.present(alertHC, animated: true)
+          })
+            .alert(isPresented:$showAlert2) {
+              Alert(title: Text("New User"), message: Text("Saved"), dismissButton: .default(Text("Ok")))
+          }
+          // code 6
           
-          UIApplication.shared.windows[0].rootViewController?.present(alertHC, animated: true)
-        })
-        .alert(isPresented:$showAlert2) {
-          Alert(title: Text("New User"), message: Text("Saved"), dismissButton: .default(Text("Ok")))
-        }
-        // code 6
-        
-        Slider(value: $alpha, in: 65...90,step: 1,onEditingChanged: { data in
-          self.alphaToShow = String(Character(UnicodeScalar(Int(self.alpha))!))
-
-          DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-          cloud.getPublicDirectoryV4(cursor: nil, begins: self.alphaToShow)
-        }
-        }).padding()
-        Text(alphaToShow).onReceive(cloud.directoryPublisher) { (_) in
-          DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.display1 = false
-            self.nouvelle.rexes = cloud.users!.rexes
+          Slider(value: $alpha, in: 65...90,step: 1,onEditingChanged: { data in
+            self.alphaToShow = String(Character(UnicodeScalar(Int(self.alpha))!))
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+              cloud.getPublicDirectoryV4(cursor: nil, begins: self.alphaToShow)
+            }
+          }).padding()
+          Text(alphaToShow).onReceive(cloud.directoryPublisher) { (_) in
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-              self.display1 = true
+              self.display4 = false
+              self.nouvelle.rexes = cloud.users!.rexes
+              DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.display4 = true
+              }
             }
           }
+          Spacer()
         }
-        Spacer()
       }
     }
   }
@@ -359,6 +405,8 @@ func fakeAccounts() {
 //    crypto.putPublicKey(publicK: sPublicK!, keySize: 2048, publicTag: "ch.cqd.WotsApp")
 //    crypto.putPrivateKey(privateK: sPrivateKey!, keySize: 2048, privateTag: "ch.cqd.WotsApp")
 }
+
+
 
 
 //extension Binding {
