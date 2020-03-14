@@ -72,6 +72,7 @@ struct ContentView: View {
       .onTapGesture {
         if token != nil {
           print("ok")
+          cloud.showBlocked()
           cloud.searchPrivate(token)
 //          fakeAccounts()
           crypto.md5hash(qbfString: "The quick brown fox jumps over the lazy dog.")
@@ -167,13 +168,13 @@ struct ContentView: View {
           .multilineTextAlignment(.center)
           .textFieldStyle(RoundedBorderTextFieldStyle())
           .disabled(nickName.count > 15)
-          .simultaneousGesture(LongPressGesture()
-            .onEnded({bool in
-                if bool {
-                  print("Long!")
-                }
-                })
-                )
+//          .simultaneousGesture(LongPressGesture()
+//            .onEnded({bool in
+//                if bool {
+//                  print("Long!")
+//                }
+//                })
+//                )
           
         TextField("Secret?", text: $secret)
           .multilineTextAlignment(.center)
@@ -233,7 +234,7 @@ struct ContentView: View {
           // code 9
           .allowsHitTesting(true)
           .onLongPressGesture {
-          cloud.searchNReturn(token)
+          cloud.searchNReturn(token,action:"return")
         }.onReceive(cloud.returnRecordPublisher) { ( link ) in
                   self.showConfirm = true
                   (self.privateLink,self.publicLink) = link

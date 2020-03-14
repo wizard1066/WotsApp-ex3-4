@@ -28,19 +28,17 @@ class RemoteNotifications: NSObject, URLSessionDelegate {
     jsonObjects.append(["aps":["badge":1,"category":"mycategory","alert":["title":"JSON What","body":"You must be kidding"]]])
   }
   
+  // code 4
+  
   func saveMessage(message:String, title:String) -> Int {
-    jsonObjects.append(["aps":["badge":1,"category":"mycategory","alert":["title":title,"body":message],"mutable-content":true]])
+  jsonObjects.append(["aps":["content-available":1,"category":"wotsapp2","alert":["title":title,"body":message],"mutable-content":true,"user":title,"device":token]])
     return(jsonObjects.count - 1)
   }
-  
-  // code 2
-  
+    
   func requestMessage(message:String, title:String) -> Int {
     jsonObjects.append(["aps":["badge":1,"category":"wotsapp","alert":["title":title,"body":message],"device":token]])
     return(jsonObjects.count - 1)
   }
-  
-  // code 4
   
   func grantMessage(message:String, title:String) -> Int {
     let secret = UserDefaults.standard.string(forKey: "secret")
@@ -55,6 +53,11 @@ class RemoteNotifications: NSObject, URLSessionDelegate {
   
   func denyMessage(message:String, title:String) -> Int {
     jsonObjects.append(["aps":["content-available":1,"category":"wotsapp","device":token,"request":"deny"]])
+    return(jsonObjects.count - 1)
+  }
+  
+  func blockMessage(device: String) -> Int {
+    jsonObjects.append(["aps":["content-available":1,"category":"wotsapp2","device":token,"request":"block"]])
     return(jsonObjects.count - 1)
   }
   

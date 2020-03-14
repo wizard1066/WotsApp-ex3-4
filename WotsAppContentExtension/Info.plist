@@ -31,6 +31,15 @@
 			<key>UNNotificationExtensionInitialContentSizeRatio</key>
 			<real>1</real>
 		</dict>
+      <key>NSExtensionAttributes</key>
+      <dict>
+        <key>UNnotificationExtensionDefaultContentHidden</key>
+        <true/>
+        <key>UNNotificationExtensionCategory</key>
+        <string>wotsapp2</string>
+        <key>UNNotificationExtensionInitialContentSizeRatio</key>
+        <real>1</real>
+      </dict>
 		<key>NSExtensionMainStoryboard</key>
 		<string>MainInterface</string>
 		<key>NSExtensionPointIdentifier</key>

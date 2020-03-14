@@ -128,11 +128,11 @@ class Storage: NSObject {
   }
   
   func searchPrivate(_ token:String) {
-    let escape = UserDefaults.standard.bool(forKey: "enabled_preference")
-    if escape {
-      DispatchQueue.main.async { self.searchPriPublisher.send(nil) }
-      return
-    }
+//    let escape = UserDefaults.standard.bool(forKey: "enabled_preference")
+//    if escape {
+//      DispatchQueue.main.async { self.searchPriPublisher.send(nil) }
+//      return
+//    }
     let predicate = NSPredicate(format: "token = %@", token)
     let query = CKQuery(recordType: "directory", predicate: predicate)
     privateDB.perform(query,
@@ -153,7 +153,7 @@ class Storage: NSObject {
                           var newRexes:[rex] = []
                           for result in results {
                             let newRex = self!.setRecord(record: result)
-                            newRexes.append(newRex)
+                            if (newRex != nil) { newRexes.append(newRex!) }
                           }
                           DispatchQueue.main.async { self!.searchPri2Publisher.send(newRexes) }
                         }
@@ -161,24 +161,28 @@ class Storage: NSObject {
     }
   }
   
-  // code 8
+  // code 4
   
-  func searchNReturn(_ token:String) {
+  func searchNReturn(_ token:String, action: String) {
   let predicate = NSPredicate(format: "token = %@", token)
       let query = CKQuery(recordType: "directory", predicate: predicate)
       privateDB.perform(query,
                        inZoneWith: CKRecordZone.default().zoneID) { [weak self] results, error in
                         guard let _ = self else { return }
                         if let error = error {
-  //                        DispatchQueue.main.async { self!.errorPublisher.send(error.localizedDescription) }
+                          DispatchQueue.main.async { self!.errorPublisher.send(error.localizedDescription) }
                           return
                         }
                         guard let results = results else { return }
                         if results.count == 1 {
-                          let link = results.first?.object(forKey:"linked") as? String
-                          DispatchQueue.main.async { self!.returnRecordPublisher.send(((results.first?.recordID.recordName)!,link!)) }
+                          if action == "return" {
+                            let link = results.first?.object(forKey:"linked") as? String
+                            DispatchQueue.main.async { self!.returnRecordPublisher.send(((results.first?.recordID.recordName)!,link!)) }
+                          }
+                          if action == "block" {
+                            self!.updateRex3(record: results.first!)
+                          }
                         }
-                          print("error")
                         }
                         
     
@@ -220,16 +224,42 @@ class Storage: NSObject {
   
   // code 8
   
-  func setRecord(record: CKRecord) -> rex {
+  func setRecord(record: CKRecord) -> rex? {
     
     let name = record.object(forKey: "nickName") as? String
     let secret = record.object(forKey: "secret") as? String
     let publicK = record.object(forKey: "publicK") as? Data
     let privateK = record.object(forKey: "privateK") as? Data
-    let token = record.object(forKey: "token") as? String
+    let device = record.object(forKey: "token") as? String
     let image = record.object(forKey: "image") as? Data
-    let newRex = rex(id: record.recordID, token: token, nickName: name, image: image, secret: secret, publicK: publicK, privateK: privateK)
+    let newRex = rex(id: record.recordID, token: device, nickName: name, image: image, secret: secret, publicK: publicK, privateK: privateK)
     print("setRex ",name)
+    
+    if device == token! {
+      return(newRex)
+    }
+    
+    
+    let defaults = UserDefaults.init(suiteName: "group.ch.cqd.WotsApp")
+    let tokensBlocked = defaults?.array(forKey: "block")
+    
+//    if tokensBlocked != nil {
+//      let escape = (tokensBlocked as! [String]).contains(token!)
+//      if escape {
+//        print("no way, Jose!!")
+//        return(nil)
+//      }
+//    }
+    if tokenIsBlocked(token: device!) {
+      return(nil)
+    }
+    
+
+    if tokenIsBlocked(token: token!) {
+      return(nil)
+    }
+    
+    
     return(newRex)
   }
   
@@ -248,8 +278,11 @@ class Storage: NSObject {
                         let name = result.object(forKey: "nickName") as? String
                         let publicK = result.object(forKey: "publicK") as? Data
                         let DBtoken = result.object(forKey: "token") as? String
+                
+                        
                         let recordID = result.recordID
-                        if DBtoken != token {
+                        
+                        if DBtoken != token && !self!.tokenIsBlocked(token: DBtoken!) {
                           let newRex = rex(id: recordID, token: DBtoken, nickName: name, image: nil, secret: nil, publicK: publicK, privateK: nil)
                           self!.users!.rexes.append(newRex)
                         }
@@ -298,7 +331,7 @@ class Storage: NSObject {
     }
     queryOp.recordFetchedBlock = { record in
       let newRex = self.setRecord(record: record)
-      newUsers.append(newRex)
+      if newRex != nil { newUsers.append(newRex!) }
     }
     queryOp.queryCompletionBlock = { cursor, error in
       if cursor != nil {
@@ -308,44 +341,11 @@ class Storage: NSObject {
     publicDB.add(queryOp)
   }
   
-  // code 4
-  
-//  var cursor2G: CKQueryOperation.Cursor?
-//
-//  func getPublicDirectoryV3(cursor: CKQueryOperation.Cursor?) {
-//    let predicate = NSPredicate(value: true)
-//    let query = CKQuery(recordType: "directory", predicate: predicate)
-//    query.sortDescriptors = [NSSortDescriptor(key: "nickName", ascending: true)]
-//    var queryOp: CKQueryOperation!
-//    queryOp.resultsLimit = 80
-//    if cursor == nil {
-//      queryOp = CKQueryOperation(query: query)
-//    } else {
-//      queryOp = CKQueryOperation(cursor: cursor!)
-//    }
-//    queryOp.recordFetchedBlock = { record in
-//      let newRex = self.setRecord(record: record)
-//      self.users!.rexes.append(newRex)
-//    }
-//    queryOp.queryCompletionBlock = { cursor, error in
-//      self.cursor2G = cursor
-//    }
-//    publicDB.add(queryOp)
-//  }
-//
-//  func getPublicDirectoryV3bis() {
-//    if cursor2G != nil {
-//      getPublicDirectoryV3(cursor: cursor2G)
-//    }
-//  }
-//
-//  func tearDown() {
-//    self.users!.rexes.removeAll()
-//  }
+ 
 
   // code 5
   func getPublicDirectoryV4(cursor: CKQueryOperation.Cursor?, begins:String?) {
-    var newUsers:[rex] = []
+  var newUsers:[rex] = []
     var predicate:NSPredicate!
     if begins != nil {
       predicate = NSPredicate(format: "nickName BEGINSWITH %@", begins!)
@@ -364,7 +364,7 @@ class Storage: NSObject {
     queryOp.resultsLimit = 80
     queryOp.recordFetchedBlock = { record in
       let newRex = self.setRecord(record: record)
-      newUsers.append(newRex)
+      if newRex != nil { newUsers.append(newRex!) }
     }
     queryOp.queryCompletionBlock = { cursor, error in
       if cursor != nil {
@@ -613,12 +613,68 @@ class Storage: NSObject {
       saveRecordsOperation.savePolicy = .allKeys
       saveRecordsOperation.modifyRecordsCompletionBlock = { savedRecords,deletedRecordID, error in
         if error != nil {
-//          DispatchQueue.main.async { self.errorPublisher.send(error?.localizedDescription) }
+          DispatchQueue.main.async { self.errorPublisher.send(error!.localizedDescription) }
         } else {
           print("updated db")
         }
       }
       self.privateDB.add(saveRecordsOperation)
+  }
+  
+  // code 5
+  
+  func updateRex3(record: CKRecord) {
+        record.setValue("oui", forKey: "block")
+        let saveRecordsOperation = CKModifyRecordsOperation()
+        
+        saveRecordsOperation.recordsToSave = [record]
+        saveRecordsOperation.savePolicy = .allKeys
+        saveRecordsOperation.modifyRecordsCompletionBlock = { savedRecords,deletedRecordID, error in
+          if error != nil {
+            DispatchQueue.main.async { self.errorPublisher.send(error!.localizedDescription) }
+          } else {
+            let tokenToBlock = record.object(forKey:"token") as? String
+            self.saveBlockedTokenToSharedmemory(token2B: tokenToBlock!)
+            print("updated db")
+          }
+        }
+        self.privateDB.add(saveRecordsOperation)
+    }
+    
+    func saveBlockedTokenToSharedmemory(token2B: String) {
+      let defaults = UserDefaults.init(suiteName: "group.ch.cqd.WotsApp")
+      let tokensBlocked = defaults?.array(forKey: "block")
+      if var tokensBlocked = tokensBlocked as? [String] {
+        tokensBlocked.append(token2B)
+        defaults?.set(tokensBlocked, forKey: "block")
+      } else {
+        defaults?.set([token2B], forKey: "block")
+      }
+    }
+    
+    func tokenIsBlocked(token: String) -> Bool {
+      let defaults = UserDefaults.init(suiteName: "group.ch.cqd.WotsApp")
+      let tokensBlocked = defaults?.array(forKey: "block")
+      
+      if tokensBlocked != nil {
+        let escape = (tokensBlocked as! [String]).contains(token)
+        if escape {
+          print("no way, Jose!!")
+          return(true)
+        }
+      }
+      return false
+  }
+  
+  func showBlocked() {
+    let defaults = UserDefaults.init(suiteName: "group.ch.cqd.WotsApp")
+    let tokensBlocked = defaults?.array(forKey: "block")
+    
+    if tokensBlocked != nil {
+      for token in tokensBlocked! {
+        print("blocked ",token)
+      }
+    }
   }
 }
 

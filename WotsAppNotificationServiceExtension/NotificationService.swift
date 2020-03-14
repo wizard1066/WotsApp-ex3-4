@@ -19,18 +19,39 @@ class NotificationService: UNNotificationServiceExtension {
         self.contentHandler = contentHandler
         bestAttemptContent = (request.content.mutableCopy() as? UNMutableNotificationContent)
         
+        
+        
+        
+//      let defaults = UserDefaults.init(suiteName: "group.ch.cqd.WotsApp")
+//      let tokensBlocked = defaults?.array(forKey: "block")
+//      if tokensBlocked != nil {
+////          UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+////          UNUserNotificationCenter.current().removeAllDeliveredNotifications()
+////          bestAttemptContent?.title = "Censored!"
+//          let aps = bestAttemptContent?.userInfo as? [String:Any]
+//          let info = aps!["aps"] as? [String:Any]
+//          bestAttemptContent?.title = info!.debugDescription
+//          let device = info!["device"] as? String
+//          let escape = (tokensBlocked as! [String]).contains(device!)
+//          if escape {
+//            bestAttemptContent?.title = "Censored!"
+//            contentHandler(bestAttemptContent!)
+//          }
+//        }
+        
+        
         if let bestAttemptContent = bestAttemptContent {
-            // Modify the notification content here...
-            
-  // code 16
             let defaults = UserDefaults.init(suiteName: "group.ch.cqd.WotsApp")
             let localK = defaults?.object(forKey: "privateK") as? String
           
             putPrivateKey64(privateK: localK!, keySize: 2048, privateTag: "ch.cqd.WotsApp")
             
-            bestAttemptContent.title = "\(bestAttemptContent.title) [encrypted]"
+//            bestAttemptContent.title = "\(bestAttemptContent.title) [encrypted]"
             bestAttemptContent.body = decpryptBase64(encrpted: bestAttemptContent.body)!
-            contentHandler(bestAttemptContent)
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1)  {
+              contentHandler(bestAttemptContent)
+            }
         }
     }
     

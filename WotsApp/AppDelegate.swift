@@ -67,8 +67,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     if request == "grant" {
       DispatchQueue.main.async {
         print("grant ",token)
-//        alertPublisher.send(("grant","grant"))
-//          let secret = UserDefaults.standard.string(forKey: "secret")
         popUpPublisher.send(secret!)
       }
     }
@@ -85,6 +83,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       alertPublisher.send(("deny","deny"))
     }
     
+    if request == "block" {
+      cloud.saveBlockedTokenToSharedmemory(token2B: device!)
+    }
+
     completionHandler(.newData)
   }
 
@@ -125,6 +127,25 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
   
   // code 4
   func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+  
+//  let info = notification.request.content.userInfo as? [String:Any]
+//  let device = info!["device"] as? String
+  
+  let userInfo = notification.request.content.userInfo["aps"]! as! Dictionary<String, Any>
+  let device = userInfo["device"] as? String
+  
+  let defaults = UserDefaults.init(suiteName: "group.ch.cqd.WotsApp")
+  let tokensBlocked = defaults?.array(forKey: "block")
+  
+  if tokensBlocked != nil {
+    let escape = (tokensBlocked as! [String]).contains(device!)
+    if escape && device != token {
+      print("no way, Jose!")
+      completionHandler([])
+      return
+    }
+  }
+  
   completionHandler([.alert, .badge, .sound])
   }
   
@@ -137,6 +158,7 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
      let request = response.notification.request
      let content = request.content.mutableCopy() as! UNMutableNotificationContent
      
+     
      if action == "accept" {
        print("content ",request.content.userInfo)
        let userInfo = request.content.userInfo["aps"]! as! Dictionary<String, Any>
@@ -147,7 +169,7 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
      if action == "later" {
          let userInfo = request.content.userInfo["aps"]! as! Dictionary<String, Any>
          let device = userInfo["device"] as? String
-         let user = userInfo["user"] as? String
+//         let user = userInfo["user"] as? String
          let messageID = poster.laterMessage(message: "later", title: "later")
          poster.postNotification(type: "background", jsonID: messageID, token: device!)
          UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [request.identifier])
@@ -155,8 +177,21 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
      if action == "deny" {
          let userInfo = request.content.userInfo["aps"]! as! Dictionary<String, Any>
          let device = userInfo["device"] as? String
-         let user = userInfo["user"] as? String
+//         let user = userInfo["user"] as? String
          let messageID = poster.laterMessage(message: "deny", title: "deny")
+         poster.postNotification(type: "background", jsonID: messageID, token: device!)
+         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [request.identifier])
+     }
+     
+     // code 2
+     
+     if action == "block" {
+         let userInfo = request.content.userInfo["aps"]! as! Dictionary<String, Any>
+         let device = userInfo["device"] as? String
+         let user = userInfo["user"] as? String
+         print("blocking user ", user!)
+         cloud.searchNReturn(device!, action: "block")
+         let messageID = poster.blockMessage(device:device!)
          poster.postNotification(type: "background", jsonID: messageID, token: device!)
          UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [request.identifier])
      }
@@ -169,8 +204,11 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
      let laterAction = UNNotificationAction(identifier: "later", title: "Later", options: [.foreground])
      let denyAction = UNNotificationAction(identifier: "deny", title: "Deny", options: [.destructive])
      let wotsappCategory = UNNotificationCategory(identifier: "wotsapp", actions: [acceptAction,laterAction,denyAction], intentIdentifiers: [], options: [])
+     // code 1
+     let blockAction = UNNotificationAction(identifier: "block", title: "Block", options: [.destructive])
+     let wotsappCategory2 = UNNotificationCategory(identifier: "wotsapp2", actions: [blockAction], intentIdentifiers: [], options: [])
    
-     UNUserNotificationCenter.current().setNotificationCategories([wotsappCategory])
+     UNUserNotificationCenter.current().setNotificationCategories([wotsappCategory,wotsappCategory2])
    }
 }
 
