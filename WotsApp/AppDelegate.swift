@@ -125,26 +125,28 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
     }
   }
   
-  // code 4
+  // code 8
   func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-  
-//  let info = notification.request.content.userInfo as? [String:Any]
-//  let device = info!["device"] as? String
   
   let userInfo = notification.request.content.userInfo["aps"]! as! Dictionary<String, Any>
   let device = userInfo["device"] as? String
   
-  let defaults = UserDefaults.init(suiteName: "group.ch.cqd.WotsApp")
-  let tokensBlocked = defaults?.array(forKey: "block")
-  
-  if tokensBlocked != nil {
-    let escape = (tokensBlocked as! [String]).contains(device!)
-    if escape && device != token {
-      print("no way, Jose!")
+//  let defaults = UserDefaults.init(suiteName: "group.ch.cqd.WotsApp")
+//  let tokensBlocked = defaults?.array(forKey: "block")
+//
+//  if tokensBlocked != nil {
+//    let escape = (tokensBlocked as! [String]).contains(device!)
+//    if escape && device != token {
+//      print("no way, Jose!")
+//      completionHandler([])
+//      return
+//    }
+//  }
+
+  if cloud.tokenIsBlocked(token: device!) {
       completionHandler([])
       return
     }
-  }
   
   completionHandler([.alert, .badge, .sound])
   }
