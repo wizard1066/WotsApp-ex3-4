@@ -234,31 +234,14 @@ class Storage: NSObject {
     let image = record.object(forKey: "image") as? Data
     let newRex = rex(id: record.recordID, token: device, nickName: name, image: image, secret: secret, publicK: publicK, privateK: privateK)
     print("setRex ",name)
-    
-    if device == token! {
-      return(newRex)
-    }
-    
-    
-    let defaults = UserDefaults.init(suiteName: "group.ch.cqd.WotsApp")
-    let tokensBlocked = defaults?.array(forKey: "block")
-    
-//    if tokensBlocked != nil {
-//      let escape = (tokensBlocked as! [String]).contains(token!)
-//      if escape {
-//        print("no way, Jose!!")
-//        return(nil)
-//      }
-//    }
+
     if tokenIsBlocked(token: device!) {
       return(nil)
     }
-    
 
     if tokenIsBlocked(token: token!) {
       return(nil)
     }
-    
     
     return(newRex)
   }
@@ -270,22 +253,16 @@ class Storage: NSObject {
                      inZoneWith: CKRecordZone.default().zoneID) { [weak self] results, error in
                       guard let _ = self else { return }
                       if let error = error {
-//                        DispatchQueue.main.async { self!.errorPublisher.send(error.localizedDescription) }
+                        DispatchQueue.main.async { self!.errorPublisher.send(error.localizedDescription) }
                         return
                       }
                       guard let results = results else { return }
                       for result in results {
-                        let name = result.object(forKey: "nickName") as? String
-                        let publicK = result.object(forKey: "publicK") as? Data
-                        let DBtoken = result.object(forKey: "token") as? String
-                
-                        
-                        let recordID = result.recordID
-                        
-                        if DBtoken != token && !self!.tokenIsBlocked(token: DBtoken!) {
-                          let newRex = rex(id: recordID, token: DBtoken, nickName: name, image: nil, secret: nil, publicK: publicK, privateK: nil)
-                          self!.users!.rexes.append(newRex)
-                        }
+                          let newRex = self!.setRecord(record: result)
+                          if newRex != nil {
+                            self!.users!.rexes.append(newRex!)
+                          }
+//                        }
                       }
                       DispatchQueue.main.async { self!.gotPublicDirectory.send(true) }
     }
@@ -303,15 +280,19 @@ class Storage: NSObject {
                       }
                       guard let results = results else { return }
                       for result in results {
-                        let name = result.object(forKey: "nickName") as? String
-                        let secret = result.object(forKey: "secret") as? String
-                        let privateK = result.object(forKey: "privateK") as? Data
-                        let publicK = result.object(forKey: "publicK") as? Data
-                        let token = result.object(forKey: "token") as? String
-                        let image = result.object(forKey: "image") as? Data
-                        let recordID = result.recordID
-                        let newRex = rex(id: recordID, token: token, nickName: name, image: image, secret: secret, publicK: publicK, privateK: privateK)
-                        self!.users!.rexes.append(newRex)
+//                        let name = result.object(forKey: "nickName") as? String
+//                        let secret = result.object(forKey: "secret") as? String
+//                        let privateK = result.object(forKey: "privateK") as? Data
+//                        let publicK = result.object(forKey: "publicK") as? Data
+//                        let token = result.object(forKey: "token") as? String
+//                        let image = result.object(forKey: "image") as? Data
+//                        let recordID = result.recordID
+                        
+//                        let newRex = rex(id: recordID, token: token, nickName: name, image: image, secret: secret, publicK: publicK, privateK: privateK)
+                          let newRex = self!.setRecord(record: result)
+                          if newRex != nil {
+                            self!.users!.rexes.append(newRex!)
+                          }
                       }
     }
   }
@@ -526,10 +507,11 @@ class Storage: NSObject {
                           for result in results {
                             print("results ",result)
                             let authorized = result.object(forKey: "auth") as? String
+                            let secret = result.object(forKey: "secret") as? String
                             if authorized == nil || authorized == "" {
                               self!.authRequest2(auth: auth, name: name, device: device, record: result.recordID)
                             } else {
-                              DispatchQueue.main.async { self!.shortProtocol.send(token!) }
+                              DispatchQueue.main.async { self!.shortProtocol.send(secret!) }
                             }
                           }
                           if results.count == 0 {

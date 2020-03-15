@@ -261,7 +261,7 @@ struct ContentView: View {
         .textFieldStyle(RoundedBorderTextFieldStyle())
 
         Spacer()
-        if display4 {
+        if display4 && self.nouvelle.rexes.count > 0 {
           Picker(selection: $selected, label: Text("")) {
             ForEach(0 ..< self.nouvelle.rexes.count) {dix in
               Text(self.nouvelle.rexes[dix].nickName!)
@@ -274,7 +274,7 @@ struct ContentView: View {
               self.publicK = self.nouvelle.rexes[self.selected].publicK
               self.privateK = self.nouvelle.rexes[self.selected].privateK
               self.doubleToken = self.nouvelle.rexes[self.selected].token
-              
+              self.secret = "1066"
               cloud.authRequest(auth: "request", name: self.sendTo, device: self.address)
           }.onReceive(popUpPublisher, perform: { ( code ) in
             self.disableText = true
@@ -287,6 +287,9 @@ struct ContentView: View {
           })
             .alert(isPresented:$showAlert2) {
               Alert(title: Text("New User"), message: Text("Saved"), dismissButton: .default(Text("Ok")))
+          }.onReceive(cloud.shortProtocol) { ( code ) in
+            self.disableText = false
+            self.secret = code
           }
           // code 6
           
@@ -347,16 +350,16 @@ struct PopUp : View {
           self.status = "Sorry Code Incorrect"
         }
       }).frame(width: 128, height: 128, alignment: .center)
+      Divider()
+      Text("Press RETURN to CONTINUE")
+      Spacer()
       Button(action: {
         UIApplication.shared.windows[0].rootViewController?.dismiss(animated: true, completion: {})
       }) {
         Text("Cancel")
       }
-      Button(action: {
-        UIApplication.shared.windows[0].rootViewController?.dismiss(animated: true, completion: {})
-      }) {
-        Text("OK")
-      }
+      
+      
       Text(status)
     }
   }
