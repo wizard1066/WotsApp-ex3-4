@@ -68,7 +68,7 @@ class Storage: NSObject {
   let savedPublisher = PassthroughSubject<Bool?, Never>()
   
   let searchPri2Publisher = PassthroughSubject<[rex]?, Never>()
-  let shortProtocol = PassthroughSubject<String, Never>()
+  let shortProtocol = PassthroughSubject<Void, Never>()
   let cloudPublisher = PassthroughSubject<String, Never>()
   let directoryPublisher = PassthroughSubject<Void, Never>()
   let returnRecordPublisher = PassthroughSubject<(String,String),Never>()
@@ -114,7 +114,7 @@ class Storage: NSObject {
                      inZoneWith: CKRecordZone.default().zoneID) { [weak self] results, error in
                       guard let _ = self else { return }
                       if let error = error {
-//                        DispatchQueue.main.async { self!.errorPublisher.send(error.localizedDescription) }
+                        DispatchQueue.main.async { self!.errorPublisher.send(error.localizedDescription) }
                         return
                       }
                       guard let results = results else { return }
@@ -128,18 +128,18 @@ class Storage: NSObject {
   }
   
   func searchPrivate(_ token:String) {
-//    let escape = UserDefaults.standard.bool(forKey: "enabled_preference")
-//    if escape {
-//      DispatchQueue.main.async { self.searchPriPublisher.send(nil) }
-//      return
-//    }
+    let escape = UserDefaults.standard.bool(forKey: "enabled_preference")
+    if escape {
+      DispatchQueue.main.async { self.searchPriPublisher.send(nil) }
+      return
+    }
     let predicate = NSPredicate(format: "token = %@", token)
     let query = CKQuery(recordType: "directory", predicate: predicate)
     privateDB.perform(query,
                      inZoneWith: CKRecordZone.default().zoneID) { [weak self] results, error in
                       guard let _ = self else { return }
                       if let error = error {
-//                        DispatchQueue.main.async { self!.errorPublisher.send(error.localizedDescription) }
+                        DispatchQueue.main.async { self!.errorPublisher.send(error.localizedDescription) }
                         return
                       }
                       guard let results = results else { return }
@@ -194,8 +194,7 @@ class Storage: NSObject {
     deleteRecordsOperation.recordIDsToDelete = recordIDs
     deleteRecordsOperation.modifyRecordsCompletionBlock = { savedRecords,deletedRecordID, error in
       if error != nil {
-        print("error ",error)
-        //          DispatchQueue.main.async { self.errorPublisher.send(error?.localizedDescription) }
+        DispatchQueue.main.async { self.errorPublisher.send(error!.localizedDescription) }
       } else {
         print("updated db")
       }
@@ -233,7 +232,7 @@ class Storage: NSObject {
     let device = record.object(forKey: "token") as? String
     let image = record.object(forKey: "image") as? Data
     let newRex = rex(id: record.recordID, token: device, nickName: name, image: image, secret: secret, publicK: publicK, privateK: privateK)
-    print("setRex ",name)
+    
 
     if tokenIsBlocked(token: device!) {
       return(nil)
@@ -275,20 +274,11 @@ class Storage: NSObject {
                      inZoneWith: CKRecordZone.default().zoneID) { [weak self] results, error in
                       guard let _ = self else { return }
                       if let error = error {
-//                        DispatchQueue.main.async { self!.errorPublisher.send(error.localizedDescription) }
+                        DispatchQueue.main.async { self!.errorPublisher.send(error.localizedDescription) }
                         return
                       }
                       guard let results = results else { return }
                       for result in results {
-//                        let name = result.object(forKey: "nickName") as? String
-//                        let secret = result.object(forKey: "secret") as? String
-//                        let privateK = result.object(forKey: "privateK") as? Data
-//                        let publicK = result.object(forKey: "publicK") as? Data
-//                        let token = result.object(forKey: "token") as? String
-//                        let image = result.object(forKey: "image") as? Data
-//                        let recordID = result.recordID
-                        
-//                        let newRex = rex(id: recordID, token: token, nickName: name, image: image, secret: secret, publicK: publicK, privateK: privateK)
                           let newRex = self!.setRecord(record: result)
                           if newRex != nil {
                             self!.users!.rexes.append(newRex!)
@@ -424,7 +414,6 @@ class Storage: NSObject {
       default:
         break
     }
-//    DispatchQueue.main.async { self.errorPublisher.send(error2S) }
   }
   
   
@@ -447,8 +436,7 @@ class Storage: NSObject {
         saveRecordsOperation.savePolicy = .allKeys
         saveRecordsOperation.modifyRecordsCompletionBlock = { savedRecords,deletedRecordID, error in
           if error != nil {
-            print("error ",error)
-//            DispatchQueue.main.async { self.errorPublisher.send(error?.localizedDescription) }
+            DispatchQueue.main.async { self.errorPublisher.send(error!.localizedDescription) }
           } else {
             
             self.ops = self.ops + 1
@@ -478,7 +466,7 @@ class Storage: NSObject {
         saveRecordsOperation.savePolicy = .allKeys
         saveRecordsOperation.modifyRecordsCompletionBlock = { savedRecords,deletedRecordID, error in
           if error != nil {
-//            DispatchQueue.main.async { self.errorPublisher.send(error?.localizedDescription) }
+            DispatchQueue.main.async { self.errorPublisher.send(error!.localizedDescription) }
           } else {
             
             self.ops = self.ops + 1
@@ -511,7 +499,7 @@ class Storage: NSObject {
                             if authorized == nil || authorized == "" {
                               self!.authRequest2(auth: auth, name: name, device: device, record: result.recordID)
                             } else {
-                              DispatchQueue.main.async { self!.shortProtocol.send(secret!) }
+                              DispatchQueue.main.async { self!.shortProtocol.send() }
                             }
                           }
                           if results.count == 0 {
@@ -521,7 +509,6 @@ class Storage: NSObject {
         }
       }
       
-      // code 4
       
       func authRequest2(auth:String, name: String, device:String, record: CKRecord.ID?) {
         // Search the directory
@@ -568,7 +555,7 @@ class Storage: NSObject {
       privateDB.fetch(withRecordID: recordID,
                       completionHandler: ({record, error in
                         if let error = error {
-//                          DispatchQueue.main.async { self.errorPublisher.send(error.localizedDescription) }
+                          DispatchQueue.main.async { self.errorPublisher.send(error.localizedDescription) }
                           return
                         } else {
                           if record != nil {
@@ -602,8 +589,6 @@ class Storage: NSObject {
       }
       self.privateDB.add(saveRecordsOperation)
   }
-  
-  // code 5
   
   func updateRex3(record: CKRecord) {
         record.setValue("oui", forKey: "block")

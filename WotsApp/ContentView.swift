@@ -75,7 +75,7 @@ struct ContentView: View {
           cloud.showBlocked()
           cloud.searchPrivate(token)
 //          fakeAccounts()
-          crypto.md5hash(qbfString: "The quick brown fox jumps over the lazy dog.")
+//          crypto.md5hash(qbfString: "The quick brown fox jumps over the lazy dog.")
         } else {
           print("no registration")
         }
@@ -123,6 +123,15 @@ struct ContentView: View {
         self.nouvelle.rexes = data!
         self.display3 = true
       }.onAppear {
+        var digits2D = "F"
+        var bin:[String] = []
+        bin.append(digits2D)
+        for _ in 0 ... 14 {
+          let digits3D = crypto.dnagen(digit: digits2D)!
+          digits2D = digits2D + digits3D
+          bin.append(digits3D)
+        }
+        print("bin ",bin.joined())
         let network = Connect.shared
         network.startMonitoring()
         network.netStatusChangeHandler = netMonitoring
@@ -261,7 +270,7 @@ struct ContentView: View {
         .textFieldStyle(RoundedBorderTextFieldStyle())
 
         Spacer()
-        if display4 && self.nouvelle.rexes.count > 0 {
+        if display4 {
           Picker(selection: $selected, label: Text("")) {
             ForEach(0 ..< self.nouvelle.rexes.count) {dix in
               Text(self.nouvelle.rexes[dix].nickName!)
@@ -269,13 +278,15 @@ struct ContentView: View {
           }.pickerStyle(WheelPickerStyle())
             .padding()
             .onTapGesture {
-              self.sendTo = self.nouvelle.rexes[self.selected].nickName!
-              self.address = self.nouvelle.rexes[self.selected].token!
-              self.publicK = self.nouvelle.rexes[self.selected].publicK
-              self.privateK = self.nouvelle.rexes[self.selected].privateK
-              self.doubleToken = self.nouvelle.rexes[self.selected].token
-              self.secret = "1066"
-              cloud.authRequest(auth: "request", name: self.sendTo, device: self.address)
+              if self.nouvelle.rexes.count > 0 {
+                self.sendTo = self.nouvelle.rexes[self.selected].nickName!
+                self.address = self.nouvelle.rexes[self.selected].token!
+                self.publicK = self.nouvelle.rexes[self.selected].publicK
+                self.privateK = self.nouvelle.rexes[self.selected].privateK
+                self.doubleToken = self.nouvelle.rexes[self.selected].token
+
+                cloud.authRequest(auth: "request", name: self.sendTo, device: self.address)
+              }
           }.onReceive(popUpPublisher, perform: { ( code ) in
             self.disableText = true
             self.secret = code
@@ -287,9 +298,9 @@ struct ContentView: View {
           })
             .alert(isPresented:$showAlert2) {
               Alert(title: Text("New User"), message: Text("Saved"), dismissButton: .default(Text("Ok")))
-          }.onReceive(cloud.shortProtocol) { ( code ) in
+          }.onReceive(cloud.shortProtocol) { ( _ ) in
             self.disableText = false
-            self.secret = code
+            
           }
           // code 6
           

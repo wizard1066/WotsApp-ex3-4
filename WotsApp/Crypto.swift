@@ -197,6 +197,23 @@ func md5hash(qbfString: String) {
 //  let qbfData = CryptoUtils.data(from: qbfBytes)
 //  let digest = Digest(using: .md5).update(data: qbfData)?.final()
 }
+
+func dnagen(digit:String?) -> String? {
+    if digit == nil {
+      let random = Int.random(in: 4096 ..< 65535)
+      let digit = String(format:"%02X", random)
+      return digit
+    } else {
+//        var newSet:[String] = []
+        var fullSet:Set = ["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"]
+        let lamb = Array(digit!).map { String($0) }
+        print("lamb ",lamb.count)
+        var subSet = fullSet.subtracting(lamb)
+        let newDigit = subSet.remove(at: subSet.startIndex)
+//        newSet.append(newDigit)
+        return newDigit
+    }
+  }
   
 //  func md5Hash(str: String) -> String {
 //      if let strData = str.data(using: String.Encoding.utf8) {
