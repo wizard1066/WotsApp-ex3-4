@@ -204,13 +204,12 @@ func dnagen(digit:String?) -> String? {
       let digit = String(format:"%02X", random)
       return digit
     } else {
-//        var newSet:[String] = []
-        var fullSet:Set = ["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"]
+        let fullSet:Set = ["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"]
         let lamb = Array(digit!).map { String($0) }
-        print("lamb ",lamb.count)
         var subSet = fullSet.subtracting(lamb)
-        let newDigit = subSet.remove(at: subSet.startIndex)
-//        newSet.append(newDigit)
+        let sex = Int.random(in: 0 ..< subSet.count)
+        let dix = subSet.index(subSet.startIndex, offsetBy: sex)
+        let newDigit = subSet.remove(at: dix)
         return newDigit
     }
   }

@@ -124,14 +124,36 @@ struct ContentView: View {
         self.display3 = true
       }.onAppear {
         var digits2D = "F"
-        var bin:[String] = []
-        bin.append(digits2D)
-        for _ in 0 ... 14 {
+        var nix = 0
+        var bin = Array(repeating: Array(repeating: "", count: 16), count: 16)
+        repeat {
+        if nix == 0 {
+//          bin[0][nix] = digits2D
+        } else {
+          digits2D = bin[nix - 1][nix]
+//          bin[nix - 1][nix] = crypto.dnagen(digit: digits2D)!
+        }
+        for dix in 0 ... 14 {
           let digits3D = crypto.dnagen(digit: digits2D)!
           digits2D = digits2D + digits3D
-          bin.append(digits3D)
+          bin[dix][nix].append(digits3D)
         }
-        print("bin ",bin.joined())
+        nix = nix + 1
+        } while nix < 16
+        
+        for rex in 0 ... 14 {
+        var sex:[String] = []
+        for dix in 0 ... 15 {
+            sex.append(bin[rex][dix])
+            switch dix {
+                case 3:sex.append("-")
+                case 7:sex.append("-")
+                case 11:sex.append("-")
+                default:break
+            }
+        }
+        print(sex.joined())
+        }
         let network = Connect.shared
         network.startMonitoring()
         network.netStatusChangeHandler = netMonitoring

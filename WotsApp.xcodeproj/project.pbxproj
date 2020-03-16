@@ -182,10 +182,10 @@
 		7BE45A9F240AD2CE00D3FF68 /* WotsApp */ = {
 			isa = PBXGroup;
 			children = (
+				7BBD1C11240FD5F400D8CDBA /* Storage.swift */,
 				7B7F47C72418D3F300918F3C /* Connect.swift */,
 				7BE45AB6240ADEF600D3FF68 /* WotsApp.entitlements */,
 				7BE45AA0240AD2CE00D3FF68 /* AppDelegate.swift */,
-				7BBD1C11240FD5F400D8CDBA /* Storage.swift */,
 				7BE45ABF240D62C700D3FF68 /* Crypto.swift */,
 				7BE45AB7240AE23E00D3FF68 /* RemoteNotifications.swift */,
 				7BE45AB4240AD54E00D3FF68 /* LocalNotifications.swift */,
