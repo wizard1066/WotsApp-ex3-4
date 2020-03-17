@@ -198,14 +198,60 @@ func md5hash(qbfString: String) {
 //  let digest = Digest(using: .md5).update(data: qbfData)?.final()
 }
 
-func gendna(codes:[String]?) {
-  if codes == nil {
-    let random1 = Int.random(in: 4096 ..< 65535)
-    let random2 = Int.random(in: 4096 ..< 65535)
-    let digit = String(format:"%02X-%02X", random1,random2)
-    print(" digit ",digit)
-    return
-  }
+  func gendna(codes:[String]?) {
+    if codes == nil {
+      let random1 = Int.random(in: 4096 ..< 65535)
+      let random2 = Int.random(in: 4096 ..< 65535)
+      let digit = String(format:"%02X-%02X", random1,random2)
+      print(" digit ",digit)
+      return
+    } else {
+      var nix = 0
+      var bin = Array(repeating: Array(repeating: "", count: 21), count: 16)
+      
+      for word in codes! {
+        var dix = 0
+        for letter in word.enumerated() {
+          bin[nix][dix] = String(letter.element)
+          dix+=1
+        }
+        nix += 1
+      }
+      
+      nix = 0
+    
+      repeat {
+        var digits2D = ""
+        for dix in 0 ... 15 {
+          print("fooBar dix \(dix) nix \(nix) digits2D \(digits2D)")
+          let digits3D = crypto.dnagen(digit: digits2D)!
+          if bin[dix][nix].isEmpty {
+            digits2D = digits2D + digits3D
+            bin[dix][nix] = digits3D
+          } else {
+            digits2D = digits2D + bin[dix][nix]
+          }
+        }
+        nix += 1
+      } while nix < 8
+      
+      for rex in 0 ... 15 {
+      var sex:[String] = []
+      for dix in 0 ... 20 {
+          sex.append(bin[rex][dix])
+          switch dix {
+              case 3:sex.append("-")
+              case 7:sex.append(" ")
+              case 11:sex.append("-")
+              default:break
+          }
+      }
+      print(sex.joined())
+      }
+      
+    }
+    
+    
 
   }
 

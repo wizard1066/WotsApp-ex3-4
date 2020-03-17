@@ -123,54 +123,53 @@ struct ContentView: View {
         self.nouvelle.rexes = data!
         self.display3 = true
       }.onAppear {
-//        crypto.gendna(codes: ["F5D7CB9E"])
-        var nix = 0
-        var bin = Array(repeating: Array(repeating: "", count: 21), count: 16)
-        
-        let word = "F5D7CB9E"
-        var dix = 0
-        for letter in word.enumerated() {
-          bin[0][dix] = String(letter.element)
-          dix+=1
-        }
-
-        let word2 = "8A4188CB"
-        var dix2 = 0
-        for letter in word2.enumerated() {
-          bin[1][dix2] = String(letter.element)
-          dix2+=1
-        }
-
-
-        repeat {
-        var digits2D = ""
-        for dix in 0 ... 15 {
-          print("fooBar dix \(dix) nix \(nix) digits2D \(digits2D)")
-          let digits3D = crypto.dnagen(digit: digits2D)!
-          if bin[dix][nix].isEmpty {
-            digits2D = digits2D + digits3D
-            bin[dix][nix] = digits3D
-          } else {
-            digits2D = digits2D + bin[dix][nix]
-          }
-//          print("digit3D ",dix,nix,digits3D,digits2D)
-        }
-        nix += 1
-        } while nix < 8
-
-        for rex in 0 ... 15 {
-        var sex:[String] = []
-        for dix in 0 ... 20 {
-            sex.append(bin[rex][dix])
-            switch dix {
-                case 3:sex.append("-")
-                case 7:sex.append(" ")
-                case 11:sex.append("-")
-                default:break
-            }
-        }
-        print(sex.joined())
-        }
+        crypto.gendna(codes: ["F5D7CB9E","D3026DE8","4641FA46"])
+//        var nix = 0
+//        var bin = Array(repeating: Array(repeating: "", count: 21), count: 16)
+//
+//        let word = "F5D7CB9E"
+//        var dix = 0
+//        for letter in word.enumerated() {
+//          bin[0][dix] = String(letter.element)
+//          dix+=1
+//        }
+//
+//        let word2 = "8A4188CB"
+//        var dix2 = 0
+//        for letter in word2.enumerated() {
+//          bin[1][dix2] = String(letter.element)
+//          dix2+=1
+//        }
+//
+//
+//        repeat {
+//        var digits2D = ""
+//        for dix in 0 ... 15 {
+//          print("fooBar dix \(dix) nix \(nix) digits2D \(digits2D)")
+//          let digits3D = crypto.dnagen(digit: digits2D)!
+//          if bin[dix][nix].isEmpty {
+//            digits2D = digits2D + digits3D
+//            bin[dix][nix] = digits3D
+//          } else {
+//            digits2D = digits2D + bin[dix][nix]
+//          }
+//        }
+//        nix += 1
+//        } while nix < 8
+//
+//        for rex in 0 ... 15 {
+//        var sex:[String] = []
+//        for dix in 0 ... 20 {
+//            sex.append(bin[rex][dix])
+//            switch dix {
+//                case 3:sex.append("-")
+//                case 7:sex.append(" ")
+//                case 11:sex.append("-")
+//                default:break
+//            }
+//        }
+//        print(sex.joined())
+//        }
         
       
         
