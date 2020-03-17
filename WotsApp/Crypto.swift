@@ -198,7 +198,7 @@ func md5hash(qbfString: String) {
 //  let digest = Digest(using: .md5).update(data: qbfData)?.final()
 }
 
-  func gendna(codes:[String]?) {
+  func genCode(codes:[String]?) {
     if codes == nil {
       let random1 = Int.random(in: 4096 ..< 65535)
       let random2 = Int.random(in: 4096 ..< 65535)
@@ -219,13 +219,12 @@ func md5hash(qbfString: String) {
       }
       
       nix = 0
-    
       repeat {
         var digits2D = ""
-        for dix in 0 ... 15 {
+        for dix in 0 ... codes!.count {
           print("fooBar dix \(dix) nix \(nix) digits2D \(digits2D)")
-          let digits3D = crypto.dnagen(digit: digits2D)!
           if bin[dix][nix].isEmpty {
+            let digits3D = crypto.dnagen(digit: digits2D)!
             digits2D = digits2D + digits3D
             bin[dix][nix] = digits3D
           } else {
@@ -246,7 +245,9 @@ func md5hash(qbfString: String) {
               default:break
           }
       }
-      print(sex.joined())
+      if rex == codes!.count {
+        print(sex.joined())
+      }
       }
       
     }

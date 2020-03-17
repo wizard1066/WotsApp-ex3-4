@@ -123,7 +123,8 @@ struct ContentView: View {
         self.nouvelle.rexes = data!
         self.display3 = true
       }.onAppear {
-        crypto.gendna(codes: ["F5D7CB9E","D3026DE8","4641FA46"])
+        crypto.genCode(codes: ["F5D7CB9E","D3026DE8","4641FA46"])
+//          crypto.genCode(codes: nil)
 //        var nix = 0
 //        var bin = Array(repeating: Array(repeating: "", count: 21), count: 16)
 //
