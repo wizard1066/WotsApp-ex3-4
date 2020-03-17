@@ -198,21 +198,32 @@ func md5hash(qbfString: String) {
 //  let digest = Digest(using: .md5).update(data: qbfData)?.final()
 }
 
+func gendna(codes:[String]?) {
+  if codes == nil {
+    let random1 = Int.random(in: 4096 ..< 65535)
+    let random2 = Int.random(in: 4096 ..< 65535)
+    let digit = String(format:"%02X-%02X", random1,random2)
+    print(" digit ",digit)
+    return
+  }
+
+  }
+
 func dnagen(digit:String?) -> String? {
-    if digit == nil {
-      let random = Int.random(in: 4096 ..< 65535)
-      let digit = String(format:"%02X", random)
-      return digit
-    } else {
         let fullSet:Set = ["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"]
-        let lamb = Array(digit!).map { String($0) }
-        var subSet = fullSet.subtracting(lamb)
+        let digits = Array(digit!).map { String($0) }
+        var subSet = fullSet.subtracting(digits)
+        if subSet.isEmpty {
+          return digits.first
+        }
         let sex = Int.random(in: 0 ..< subSet.count)
         let dix = subSet.index(subSet.startIndex, offsetBy: sex)
         let newDigit = subSet.remove(at: dix)
         return newDigit
-    }
+        
   }
+  
+  
   
 //  func md5Hash(str: String) -> String {
 //      if let strData = str.data(using: String.Encoding.utf8) {
