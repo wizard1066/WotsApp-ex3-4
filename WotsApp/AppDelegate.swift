@@ -23,7 +23,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   }
   
   func applicationWillTerminate(_ application: UIApplication) {
-    UserDefaults.standard.set(false, forKey: "enabled_preference")
+//    UserDefaults.standard.set(false, forKey: "enabled_preference")
   }
 
   func application(_ application: UIApplication, your  launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {

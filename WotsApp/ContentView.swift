@@ -123,59 +123,10 @@ struct ContentView: View {
         self.nouvelle.rexes = data!
         self.display3 = true
       }.onAppear {
-        crypto.genCode(codes: ["F5D7CB9E","D3026DE8","4641FA46"])
-//          crypto.genCode(codes: nil)
-//        var nix = 0
-//        var bin = Array(repeating: Array(repeating: "", count: 21), count: 16)
-//
-//        let word = "F5D7CB9E"
-//        var dix = 0
-//        for letter in word.enumerated() {
-//          bin[0][dix] = String(letter.element)
-//          dix+=1
-//        }
-//
-//        let word2 = "8A4188CB"
-//        var dix2 = 0
-//        for letter in word2.enumerated() {
-//          bin[1][dix2] = String(letter.element)
-//          dix2+=1
-//        }
-//
-//
-//        repeat {
-//        var digits2D = ""
-//        for dix in 0 ... 15 {
-//          print("fooBar dix \(dix) nix \(nix) digits2D \(digits2D)")
-//          let digits3D = crypto.dnagen(digit: digits2D)!
-//          if bin[dix][nix].isEmpty {
-//            digits2D = digits2D + digits3D
-//            bin[dix][nix] = digits3D
-//          } else {
-//            digits2D = digits2D + bin[dix][nix]
-//          }
-//        }
-//        nix += 1
-//        } while nix < 8
-//
-//        for rex in 0 ... 15 {
-//        var sex:[String] = []
-//        for dix in 0 ... 20 {
-//            sex.append(bin[rex][dix])
-//            switch dix {
-//                case 3:sex.append("-")
-//                case 7:sex.append(" ")
-//                case 11:sex.append("-")
-//                default:break
-//            }
-//        }
-//        print(sex.joined())
-//        }
+        let newCode = crypto.genCode(codes: ["F5D7CB9E","D3026DE8","4641FA46"])
+        print("newCode ",newCode)
         
-      
-        
-        
-        
+
         let network = Connect.shared
         network.startMonitoring()
         network.netStatusChangeHandler = netMonitoring
@@ -217,10 +168,17 @@ struct ContentView: View {
       if display2 {
         Spacer()
         
-        TextField("NickName?", text: $nickName)
+        TextField("NickName?", text: $nickName, onCommit: {
+          cloud.getMatchingPublicNames(nil, nickName: "Zack")
+        })
           .multilineTextAlignment(.center)
           .textFieldStyle(RoundedBorderTextFieldStyle())
           .disabled(nickName.count > 15)
+          .onReceive(cloud.matchesPublisher) { ( pins ) in
+          // if pins is nil returns a new code
+            self.secret = crypto.genCode(codes: pins)!
+            print("self.secret ",self.secret)
+          }
 //          .simultaneousGesture(LongPressGesture()
 //            .onEnded({bool in
 //                if bool {
@@ -229,10 +187,10 @@ struct ContentView: View {
 //                })
 //                )
           
-        TextField("Secret?", text: $secret)
-          .multilineTextAlignment(.center)
-          .textFieldStyle(RoundedBorderTextFieldStyle())
-          .disabled(secret.count > 15)
+//        TextField("Secret?", text: $secret)
+//          .multilineTextAlignment(.center)
+//          .textFieldStyle(RoundedBorderTextFieldStyle())
+//          .disabled(secret.count > 15)
         TextField("Group?", text: $group, onEditingChanged: {_ in
           if self.group.first == "a" {
             self.group = "b"
@@ -317,7 +275,7 @@ struct ContentView: View {
         if display4 {
           Picker(selection: $selected, label: Text("")) {
             ForEach(0 ..< self.nouvelle.rexes.count) {dix in
-              Text(self.nouvelle.rexes[dix].nickName!)
+              Text(self.nouvelle.rexes[dix].nickName! + " " + crypto.redact(self.nouvelle.rexes[dix].secret!))
             }
           }.pickerStyle(WheelPickerStyle())
             .padding()
@@ -328,8 +286,8 @@ struct ContentView: View {
                 self.publicK = self.nouvelle.rexes[self.selected].publicK
                 self.privateK = self.nouvelle.rexes[self.selected].privateK
                 self.doubleToken = self.nouvelle.rexes[self.selected].token
-
-                cloud.authRequest(auth: "request", name: self.sendTo, device: self.address)
+                self.secret = self.nouvelle.rexes[self.selected].secret!
+                cloud.authRequest(auth: "request", name: self.sendTo, device: self.address, secret: self.secret)
               }
           }.onReceive(popUpPublisher, perform: { ( code ) in
             self.disableText = true
@@ -352,7 +310,7 @@ struct ContentView: View {
             self.alphaToShow = String(Character(UnicodeScalar(Int(self.alpha))!))
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-              cloud.getPublicDirectoryV4(cursor: nil, begins: self.alphaToShow)
+              cloud.getPublicDirectoryV4(nil, begins: self.alphaToShow)
             }
           }).padding()
           Text(alphaToShow).onReceive(cloud.directoryPublisher) { (_) in
@@ -478,3 +436,51 @@ func fakeAccounts() {
 //    })
 //  }
 //}
+
+//          crypto.genCode(codes: nil)
+//        var nix = 0
+//        var bin = Array(repeating: Array(repeating: "", count: 21), count: 16)
+//
+//        let word = "F5D7CB9E"
+//        var dix = 0
+//        for letter in word.enumerated() {
+//          bin[0][dix] = String(letter.element)
+//          dix+=1
+//        }
+//
+//        let word2 = "8A4188CB"
+//        var dix2 = 0
+//        for letter in word2.enumerated() {
+//          bin[1][dix2] = String(letter.element)
+//          dix2+=1
+//        }
+//
+//
+//        repeat {
+//        var digits2D = ""
+//        for dix in 0 ... 15 {
+//          print("fooBar dix \(dix) nix \(nix) digits2D \(digits2D)")
+//          let digits3D = crypto.dnagen(digit: digits2D)!
+//          if bin[dix][nix].isEmpty {
+//            digits2D = digits2D + digits3D
+//            bin[dix][nix] = digits3D
+//          } else {
+//            digits2D = digits2D + bin[dix][nix]
+//          }
+//        }
+//        nix += 1
+//        } while nix < 8
+//
+//        for rex in 0 ... 15 {
+//        var sex:[String] = []
+//        for dix in 0 ... 20 {
+//            sex.append(bin[rex][dix])
+//            switch dix {
+//                case 3:sex.append("-")
+//                case 7:sex.append(" ")
+//                case 11:sex.append("-")
+//                default:break
+//            }
+//        }
+//        print(sex.joined())
+//        }

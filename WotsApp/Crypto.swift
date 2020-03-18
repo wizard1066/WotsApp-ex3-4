@@ -198,13 +198,28 @@ func md5hash(qbfString: String) {
 //  let digest = Digest(using: .md5).update(data: qbfData)?.final()
 }
 
-  func genCode(codes:[String]?) {
+func redact(_ pin:String )-> String {
+    let show = Int.random(in: 0 ..< pin.count )
+    var hidden:String = ""
+    var dix = 0
+    for letter in pin.enumerated() {
+      if dix == show {
+        hidden = hidden + String(letter.element)
+        dix += 1
+      } else {
+        hidden = hidden + "*"
+        dix += 1
+      }
+    }
+    return hidden
+  }
+
+  func genCode(codes:[String]?) -> String? {
     if codes == nil {
       let random1 = Int.random(in: 4096 ..< 65535)
       let random2 = Int.random(in: 4096 ..< 65535)
       let digit = String(format:"%02X-%02X", random1,random2)
-      print(" digit ",digit)
-      return
+      return digit
     } else {
       var nix = 0
       var bin = Array(repeating: Array(repeating: "", count: 21), count: 16)
@@ -234,26 +249,21 @@ func md5hash(qbfString: String) {
         nix += 1
       } while nix < 8
       
-      for rex in 0 ... 15 {
+      for rex in 0 ... codes!.count {
       var sex:[String] = []
-      for dix in 0 ... 20 {
+      for dix in 0 ... 7 {
           sex.append(bin[rex][dix])
           switch dix {
               case 3:sex.append("-")
-              case 7:sex.append(" ")
-              case 11:sex.append("-")
               default:break
           }
       }
       if rex == codes!.count {
-        print(sex.joined())
+        return(sex.joined())
       }
       }
-      
     }
-    
-    
-
+    return nil
   }
 
 func dnagen(digit:String?) -> String? {

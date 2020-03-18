@@ -72,6 +72,7 @@ class Storage: NSObject {
   let cloudPublisher = PassthroughSubject<String, Never>()
   let directoryPublisher = PassthroughSubject<Void, Never>()
   let returnRecordPublisher = PassthroughSubject<(String,String),Never>()
+  let matchesPublisher = PassthroughSubject<[String]?, Never>()
 
   var publicDB: CKDatabase!
   var privateDB: CKDatabase!
@@ -315,7 +316,7 @@ class Storage: NSObject {
  
 
   // code 5
-  func getPublicDirectoryV4(cursor: CKQueryOperation.Cursor?, begins:String?) {
+  func getPublicDirectoryV4(_ cursor: CKQueryOperation.Cursor?, begins:String?) {
   var newUsers:[rex] = []
     var predicate:NSPredicate!
     if begins != nil {
@@ -339,7 +340,7 @@ class Storage: NSObject {
     }
     queryOp.queryCompletionBlock = { cursor, error in
       if cursor != nil {
-        self.getPublicDirectoryV4(cursor: cursor, begins: begins)
+        self.getPublicDirectoryV4(cursor, begins: begins)
       } else {
         self.users!.rexes = newUsers
         // ********** code to cleanup **********
@@ -349,6 +350,38 @@ class Storage: NSObject {
 //        self.deleteRecords(self.deleteID)
         // ********** end cleanup code **********
         DispatchQueue.main.async { self.directoryPublisher.send() }
+      }
+    }
+    publicDB.add(queryOp)
+  }
+  
+  func getMatchingPublicNames(_ cursor: CKQueryOperation.Cursor?, nickName:String?) {
+    var knownPins:[String] = []
+    let predicate = NSPredicate(format: "nickName = %@", nickName!)
+    let query = CKQuery(recordType: "directory", predicate: predicate)
+    query.sortDescriptors = [NSSortDescriptor(key: "nickName", ascending: true)]
+    var queryOp: CKQueryOperation!
+    
+    if cursor == nil {
+      queryOp = CKQueryOperation(query: query)
+    } else {
+      queryOp = CKQueryOperation(cursor: cursor!)
+    }
+    queryOp.resultsLimit = 16
+    queryOp.desiredKeys = ["secret"]
+    queryOp.recordFetchedBlock = { record in
+      let kpin = record.object(forKey: "secret") as? String
+      knownPins.append(kpin!)
+    }
+    queryOp.queryCompletionBlock = { cursor, error in
+      if cursor != nil {
+        self.getPublicDirectoryV4(cursor, begins: nickName)
+      } else {
+        if knownPins.isEmpty {
+          DispatchQueue.main.async { self.matchesPublisher.send(nil) }
+        } else {
+          DispatchQueue.main.async { self.matchesPublisher.send(knownPins) }
+        }
       }
     }
     publicDB.add(queryOp)
@@ -373,7 +406,7 @@ class Storage: NSObject {
   var deleteID:[CKRecord.ID] = []
   
   func cleanUp() {
-    getPublicDirectoryV4(cursor: nil, begins: nil)
+    getPublicDirectoryV4(nil, begins: nil)
   }
   
   func ckErrors(error: CKError) {
@@ -431,6 +464,7 @@ class Storage: NSObject {
         record.setValue(user.publicK, forKey: "publicK")
         record.setValue(user.nickName, forKey: "nickName")
         record.setValue(user.token, forKey: "token")
+        record.setValue(user.secret, forKey: "secret")
         let saveRecordsOperation = CKModifyRecordsOperation()
         saveRecordsOperation.recordsToSave = [record]
         saveRecordsOperation.savePolicy = .allKeys
@@ -480,34 +514,35 @@ class Storage: NSObject {
     
     // code 3
     
-    func authRequest(auth:String, name: String, device:String) {
-        print("***** authRequest ******")
-        let predicate = NSPredicate(format: "nickName = %@", name)
-        let query = CKQuery(recordType: "directory", predicate: predicate)
-          privateDB.perform(query,
-                         inZoneWith: CKRecordZone.default().zoneID) { [weak self] results, error in
-                          guard let _ = self else { return }
-                          if let error = error {
-                            DispatchQueue.main.async { print("error",error) }
-                            return
+  func authRequest(auth:String, name: String, device:String, secret:String) {
+    let predicate1 = NSPredicate(format: "nickName = %@", name)
+    let predicate2 = NSPredicate(format: "secret = %@", secret)
+    let comboPredicate:NSPredicate  = NSCompoundPredicate(andPredicateWithSubpredicates: [predicate1,predicate2] )
+    let query = CKQuery(recordType: "directory", predicate: comboPredicate)
+    privateDB.perform(query,
+                      inZoneWith: CKRecordZone.default().zoneID) { [weak self] results, error in
+                        guard let _ = self else { return }
+                        if let error = error {
+                          DispatchQueue.main.async { print("error",error) }
+                          return
+                        }
+                        guard let results = results else { return }
+                        for result in results {
+                          print("results ",result)
+                          let authorized = result.object(forKey: "auth") as? String
+                          let secret = result.object(forKey: "secret") as? String
+                          if authorized == nil || authorized == "" {
+                            self!.authRequest2(auth: auth, name: name, device: device, record: result.recordID)
+                          } else {
+                            DispatchQueue.main.async { self!.shortProtocol.send() }
                           }
-                          guard let results = results else { return }
-                          for result in results {
-                            print("results ",result)
-                            let authorized = result.object(forKey: "auth") as? String
-                            let secret = result.object(forKey: "secret") as? String
-                            if authorized == nil || authorized == "" {
-                              self!.authRequest2(auth: auth, name: name, device: device, record: result.recordID)
-                            } else {
-                              DispatchQueue.main.async { self!.shortProtocol.send() }
-                            }
-                          }
-                          if results.count == 0 {
-                            print("no name ",name)
-                            self!.authRequest2(auth: auth, name: name, device: device, record: nil)
-                          }
-        }
-      }
+                        }
+                        if results.count == 0 {
+                          print("no name ",name)
+                          self!.authRequest2(auth: auth, name: name, device: device, record: nil)
+                        }
+    }
+  }
       
       
       func authRequest2(auth:String, name: String, device:String, record: CKRecord.ID?) {
