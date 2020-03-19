@@ -269,17 +269,8 @@ struct ContentView: View {
             .onTapGesture {
               if self.nouvelle.rexes.count > 0 {
                 self.sendTo = self.nouvelle.rexes[self.selected].nickName!
-//                self.address = self.nouvelle.rexes[self.selected].token!
-//                self.publicK = self.nouvelle.rexes[self.selected].publicK
-//                self.privateK = self.nouvelle.rexes[self.selected].privateK
-//                self.doubleToken = self.nouvelle.rexes[self.selected].token
                 self.secret = self.nouvelle.rexes[self.selected].secret!
-                print("poke")
                 cloud.getMatchingPublicNames(nil, nickName: self.nouvelle.rexes[self.selected].nickName!)
-                
-                
-                
-//                cloud.authRequest(auth: "request", name: self.sendTo, device: self.address, secret: self.secret)
               }
           }.onReceive(cloud.matchesPublisher) { ( pins ) in
                         self.recipients = pins!
