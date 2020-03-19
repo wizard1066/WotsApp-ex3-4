@@ -28,6 +28,7 @@ struct tags {
   var kp:String?
   var token:String?
   var pk:Data?
+  var auth:String?
 }
 
 struct errorAlert {
@@ -199,7 +200,7 @@ class Storage: NSObject {
   func searchNUpdate(_ token:String, nickName: String) {
     let predicate = NSPredicate(format: "token = %@", token)
     let query = CKQuery(recordType: "directory", predicate: predicate)
-    privateDB.perform(query,
+    publicDB.perform(query,
                      inZoneWith: CKRecordZone.default().zoneID) { [weak self] results, error in
                       guard let _ = self else { return }
                       if let error = error {
@@ -344,6 +345,7 @@ class Storage: NSObject {
   // code 5
   func getPublicDirectoryV4(_ cursor: CKQueryOperation.Cursor?, begins:String?) {
   var newUsers:[rex] = []
+  var lastName:String!
     var predicate:NSPredicate!
     if begins != nil {
       predicate = NSPredicate(format: "nickName BEGINSWITH %@", begins!)
@@ -361,8 +363,11 @@ class Storage: NSObject {
     }
     queryOp.resultsLimit = 80
     queryOp.recordFetchedBlock = { record in
-      let newRex = self.setRecord(record: record)
-      if newRex != nil { newUsers.append(newRex!) }
+      if lastName != record.object(forKey: "nickName") as? String {
+        let newRex = self.setRecord(record: record)
+        if newRex != nil { newUsers.append(newRex!) }
+      }
+      lastName = record.object(forKey: "nickName") as? String
     }
     queryOp.queryCompletionBlock = { cursor, error in
       if cursor != nil {
@@ -396,17 +401,18 @@ class Storage: NSObject {
       queryOp = CKQueryOperation(cursor: cursor!)
     }
     queryOp.resultsLimit = 16
-    queryOp.desiredKeys = ["secret","token","publicK"]
+    queryOp.desiredKeys = ["secret","token","publicK","auth"]
     queryOp.recordFetchedBlock = { record in
       let kp = record.object(forKey: "secret") as? String
       let tk = record.object(forKey: "token") as? String
       let pk = record.object(forKey: "publicK") as? Data
-      let tag = tags(kp: kp, token: tk, pk: pk)
+      let au = record.object(forKey: "auth") as? String
+      let tag = tags(kp: kp, token: tk, pk: pk, auth: au)
       kps.append(tag)
     }
     queryOp.queryCompletionBlock = { cursor, error in
       if cursor != nil {
-        self.getPublicDirectoryV4(cursor, begins: nickName)
+        self.getMatchingPublicNames(cursor, nickName: nickName)
       } else {
         if kps.isEmpty {
           DispatchQueue.main.async { self.matchesPublisher.send(nil) }
@@ -626,7 +632,7 @@ class Storage: NSObject {
     let saveRecordsOperation = CKModifyRecordsOperation()
     
     saveRecordsOperation.recordsToSave = [record]
-    saveRecordsOperation.savePolicy = .allKeys
+    saveRecordsOperation.savePolicy = .changedKeys
     saveRecordsOperation.modifyRecordsCompletionBlock = { savedRecords,deletedRecordID, error in
       if error != nil {
         DispatchQueue.main.async { self.errorPublisher.send(error!.localizedDescription) }
@@ -634,7 +640,7 @@ class Storage: NSObject {
         print("updated4 db")
       }
     }
-    self.privateDB.add(saveRecordsOperation)
+    self.publicDB.add(saveRecordsOperation)
   }
     
   func updateRex() {

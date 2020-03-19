@@ -30,10 +30,20 @@ class RemoteNotifications: NSObject, URLSessionDelegate {
   
   // code 4
   
+//  func saveMessage(message:String, title:String) -> Int {
+//  jsonObjects.append(["aps":["content-available":1,"category":"wotsapp2","alert":["title":title,"body":message],"mutable-content":true,"user":title,"device":token]])
+//    return(jsonObjects.count - 1)
+//  }
+  
   func saveMessage(message:String, title:String) -> Int {
-  jsonObjects.append(["aps":["content-available":1,"category":"wotsapp2","alert":["title":title,"body":message],"mutable-content":true,"user":title,"device":token]])
+  jsonObjects.append(["aps":["category":"wotsapp2","alert":["title":title,"body":message],"mutable-content":true,"user":title,"device":token]])
     return(jsonObjects.count - 1)
   }
+  
+//  func saveMessage(message:String, title:String) -> Int {
+//  jsonObjects.append(["aps":["content-available":1,"category":"wotsapp2","alert":["title":title,"body":message],"user":title,"device":token]])
+//    return(jsonObjects.count - 1)
+//  }
     
   func requestMessage(message:String, title:String) -> Int {
     jsonObjects.append(["aps":["badge":1,"category":"wotsapp","alert":["title":title,"body":message],"device":token]])

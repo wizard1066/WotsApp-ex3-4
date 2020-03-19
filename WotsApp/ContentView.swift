@@ -73,49 +73,49 @@ struct ContentView: View {
     VStack(alignment: .center) {
       // path as you start the app
       Text("WotsApp")
-      .onTapGesture {
-        if token != nil {
-          print("ok")
-          cloud.showBlocked()
-          cloud.searchPrivate(token)
-//          fakeAccounts()
-//          crypto.md5hash(qbfString: "The quick brown fox jumps over the lazy dog.")
-        } else {
-          print("no registration")
-        }
+        .onTapGesture {
+          if token != nil {
+            print("ok")
+            cloud.showBlocked()
+            cloud.searchPrivate(token)
+            //          fakeAccounts()
+            //          crypto.md5hash(qbfString: "The quick brown fox jumps over the lazy dog.")
+          } else {
+            print("no registration")
+          }
       }.onReceive(cloud.errorPublisher, perform: { ( error ) in
         self.title = ((error as? errorAlert)?.title)!
         self.alertMessage = ((error as? errorAlert)?.message)!
         self.showAlert = true
       })
-      .onReceive(alertPublisher, perform: { (content ) in
-        (self.title,self.alertMessage) = content
-        self.showAlert = true
-        self.disableText = true
-      }).alert(isPresented:$showAlert) {
-        Alert(title: Text(self.title), message: Text(self.alertMessage), dismissButton: .default(Text("Ok")))
+        .onReceive(alertPublisher, perform: { (content ) in
+          (self.title,self.alertMessage) = content
+          self.showAlert = true
+          self.disableText = true
+        }).alert(isPresented:$showAlert) {
+          Alert(title: Text(self.title), message: Text(self.alertMessage), dismissButton: .default(Text("Ok")))
       }.onReceive(cestBonPublisher, perform: { (_) in
         self.disableText = false
         cloud.updateRex()
       })
-      .onReceive(cloud.searchPriPublisher) { (data) in
-        if data != nil  {
-          self.user = data!
-          self.image = UIImage(data: self.user!.image!)!
-          self.nickName = self.user!.nickName!
-          self.secret = self.user!.secret!
-          self.privateK = self.user!.privateK!
-          self.publicK = self.user!.publicK!
-          crypto.putPublicKey(publicK: self.publicK, keySize: 2048, publicTag: "ch.cqd.WotsApp")
-          crypto.putPrivateKey(privateK: self.privateK, keySize: 2048, privateTag: "ch.cqd.WotsApp")
-          crypto.savePrivateKey()
-          UserDefaults.standard.set(self.secret, forKey: "secret")
-          cloud.getPublicDirectory()
-//          crypto.md5hash(qbfString: "The quick brown fox jumps over the lazy dog.")
-        } else {
-//          cloud.getPublicDirectory()
-          self.display2 = true
-        }
+        .onReceive(cloud.searchPriPublisher) { (data) in
+          if data != nil  {
+            self.user = data!
+            self.image = UIImage(data: self.user!.image!)!
+            self.nickName = self.user!.nickName!
+            self.secret = self.user!.secret!
+            self.privateK = self.user!.privateK!
+            self.publicK = self.user!.publicK!
+            crypto.putPublicKey(publicK: self.publicK, keySize: 2048, publicTag: "ch.cqd.WotsApp")
+            crypto.putPrivateKey(privateK: self.privateK, keySize: 2048, privateTag: "ch.cqd.WotsApp")
+            crypto.savePrivateKey()
+            UserDefaults.standard.set(self.secret, forKey: "secret")
+            cloud.getPublicDirectory()
+            //          crypto.md5hash(qbfString: "The quick brown fox jumps over the lazy dog.")
+          } else {
+            //          cloud.getPublicDirectory()
+            self.display2 = true
+          }
       }.onReceive(cloud.gotPublicDirectory) { (success) in
         if success! {
           self.nouvelle.rexes = cloud.users!.rexes
@@ -127,10 +127,10 @@ struct ContentView: View {
         self.nouvelle.rexes = data!
         self.display3 = true
       }.onAppear {
-//        let newCode = crypto.genCode(codes: ["F5D7CB9E","D3026DE8","4641FA46"])
-//        print("newCode ",newCode)
+        //        let newCode = crypto.genCode(codes: ["F5D7CB9E","D3026DE8","4641FA46"])
+        //        print("newCode ",newCode)
         
-
+        
         let network = Connect.shared
         network.startMonitoring()
         network.netStatusChangeHandler = netMonitoring
@@ -143,7 +143,7 @@ struct ContentView: View {
             self.showAlert = true
           } else {
             cloud.cloudStatus()
-//            cloud.cleanUp()
+            //            cloud.cleanUp()
           }
         }
       }.onReceive(cloud.cloudPublisher) { ( message ) in
@@ -165,7 +165,7 @@ struct ContentView: View {
           .onTapGesture {
             cloud.searchPriPublisher.send(self.nouvelle.rexes[self.selected2])
             self.display3 = false
-          }
+        }
       }
       
       // path for a new user
@@ -178,7 +178,7 @@ struct ContentView: View {
           .multilineTextAlignment(.center)
           .textFieldStyle(RoundedBorderTextFieldStyle())
           .disabled(nickName.count > 15)
-          
+        
         TextField("Group?", text: $group, onEditingChanged: {_ in
           if self.group.first == "a" {
             self.group = "b"
@@ -193,7 +193,7 @@ struct ContentView: View {
           .resizable()
           .frame(width: 128.0, height: 128.0)
           .onTapGesture {
-          self.index = (self.index + 1) % images.count
+            self.index = (self.index + 1) % images.count
         }.animation(.default)
         Text("Tap image to change it").font(.system(size: 12))
         Spacer()
@@ -211,8 +211,8 @@ struct ContentView: View {
           }
         }) {
           Image(systemName: "icloud.and.arrow.up")
-          .resizable()
-          .frame(width: 48.0, height: 48.0)
+            .resizable()
+            .frame(width: 48.0, height: 48.0)
         }.onReceive(cloud.savedPublisher) { ( success ) in
           if success! {
             self.showAlert2 = true
@@ -232,15 +232,15 @@ struct ContentView: View {
           .frame(width: 128.0, height: 128.0)
           .allowsHitTesting(true)
           .onLongPressGesture {
-          cloud.searchNReturn(token,action:"return")
+            cloud.searchNReturn(token,action:"return")
         }.onReceive(cloud.returnRecordPublisher) { ( link ) in
-                  self.showConfirm = true
-                  (self.privateLink,self.publicLink) = link
-                }.alert(isPresented:$showConfirm) {
-            Alert(title: Text("Are you sure you want to delete this?"), message: Text("There is no undo"), primaryButton: .destructive(Text("Delete")) {
-              cloud.deleteRecord(self.privateLink,db: "private")
-              cloud.deleteRecord(self.publicLink,db: "public")
-              self.display1 = false
+          self.showConfirm = true
+          (self.privateLink,self.publicLink) = link
+        }.alert(isPresented:$showConfirm) {
+          Alert(title: Text("Are you sure you want to delete this?"), message: Text("There is no undo"), primaryButton: .destructive(Text("Delete")) {
+            cloud.deleteRecord(self.privateLink,db: "private")
+            cloud.deleteRecord(self.publicLink,db: "public")
+            self.display1 = false
             }, secondaryButton: .cancel() {
               self.display1 = true
             })
@@ -255,9 +255,9 @@ struct ContentView: View {
           let index = poster.saveMessage(message: crypted, title: self.nickName)
           poster.postNotification(type: "alert", jsonID: index, token: self.address)
         })
-        .disabled(disableText)
-        .textFieldStyle(RoundedBorderTextFieldStyle())
-
+          .disabled(disableText)
+          .textFieldStyle(RoundedBorderTextFieldStyle())
+        
         Spacer()
         if display4 {
           Picker(selection: $selected, label: Text("")) {
@@ -269,46 +269,47 @@ struct ContentView: View {
             .onTapGesture {
               if self.nouvelle.rexes.count > 0 {
                 self.sendTo = self.nouvelle.rexes[self.selected].nickName!
-                self.secret = self.nouvelle.rexes[self.selected].secret!
                 cloud.getMatchingPublicNames(nil, nickName: self.nouvelle.rexes[self.selected].nickName!)
               }
           }.onReceive(cloud.matchesPublisher) { ( pins ) in
-                        self.recipients = pins!
-                        self.showPopover = true
-                    }.popover(
-                        isPresented: self.$showPopover,
-                        arrowEdge: .bottom
-                    ) { Text("Popover " + self.sendTo)
-                      TextField("Code?", text: self.$code, onCommit: {
-                        self.code = crypto.md5hash(qbfString: self.code)
-                        print("Code ",self.secret,self.code)
-//                        if self.secret == self.code {
-                          let answer = self.recipients.filter { $0.kp == self.code }
-                          if answer.first != nil {
-                            print("answer ",answer.first!.token!)
-                            self.disableText = false
-                            self.address = answer.first!.token!
-                            self.publicK = answer.first!.pk!
-                            cloud.searchNUpdate(answer.first!.token!, nickName: self.sendTo)
-                          } else {
-                            self.alertMessage = "Wrong Code!"
-                          }
-                      })
-                        .multilineTextAlignment(.center)
-                        .textFieldStyle(RoundedBorderTextFieldStyle()
-                        )
-                      Text(self.alertMessage)
-                      Divider()
-                      Button(action: {
-                        UIApplication.shared.windows[0].rootViewController?.dismiss(animated: true, completion: {})
-                        self.showPopover = false
-                      }) {
-                        Text("Dismiss")
-                      }
-                    }
-          
-          
-          
+            self.recipients = pins!
+            if (self.recipients.count == 1 && self.recipients.first?.auth == "cestBon") {
+              self.disableText = false
+              self.address = (self.recipients.first?.token!)!
+              self.publicK = self.recipients.first?.pk!
+            } else {
+              self.showPopover = true
+            }
+          }.popover(
+            isPresented: self.$showPopover,
+            arrowEdge: .bottom
+          ) { Text("Popover " + self.sendTo)
+            TextField("Code?", text: self.$code, onCommit: {
+              self.code = crypto.md5hash(qbfString: self.code)
+              let answer = self.recipients.filter { $0.kp == self.code }
+              if answer.first != nil {
+                print("answer ",answer.first!.token!)
+                self.disableText = false
+                self.address = answer.first!.token!
+                self.publicK = answer.first!.pk!
+                cloud.searchNUpdate(answer.first!.token!, nickName: self.sendTo)
+              } else {
+                self.alertMessage = "Wrong Code!"
+              }
+            })
+              .multilineTextAlignment(.center)
+              .textFieldStyle(RoundedBorderTextFieldStyle()
+            )
+            Text(self.alertMessage)
+            Divider()
+            Button(action: {
+              UIApplication.shared.windows[0].rootViewController?.dismiss(animated: true, completion: {})
+              self.showPopover = false
+            }) {
+              Text("Dismiss")
+            }
+          }
+            
           .onReceive(popUpPublisher, perform: { ( code ) in
             self.disableText = true
             self.secret = code
@@ -324,7 +325,6 @@ struct ContentView: View {
             self.disableText = false
             
           }
-          // code 6
           
           Slider(value: $alpha, in: 65...90,step: 1,onEditingChanged: { data in
             self.alphaToShow = String(Character(UnicodeScalar(Int(self.alpha))!))
@@ -350,29 +350,29 @@ struct ContentView: View {
 }
 
 private func alert() {
-    let alert = UIAlertController(title: "Code Match", message: "Give me his shared PIN", preferredStyle: .alert)
-    alert.addTextField() { textField in
-        textField.placeholder = "Enter some text"
-    }
-    alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in })
-    showAlert(alert: alert)
+  let alert = UIAlertController(title: "Code Match", message: "Give me his shared PIN", preferredStyle: .alert)
+  alert.addTextField() { textField in
+    textField.placeholder = "Enter some text"
+  }
+  alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in })
+  showAlert(alert: alert)
 }
 
 func showAlert(alert: UIAlertController) {
-    if let controller = topMostViewController() {
-        controller.present(alert, animated: true)
-    }
+  if let controller = topMostViewController() {
+    controller.present(alert, animated: true)
+  }
 }
 
 private func topMostViewController() -> UIViewController? {
-    guard let rootController = keyWindow()?.rootViewController else {
-        return nil
-    }
-    return rootController
+  guard let rootController = keyWindow()?.rootViewController else {
+    return nil
+  }
+  return rootController
 }
 
 private func keyWindow() -> UIWindow? {
-    return UIApplication.shared.connectedScenes
+  return UIApplication.shared.connectedScenes
     .filter {$0.activationState == .foregroundActive}
     .compactMap {$0 as? UIWindowScene}
     .first?.windows.filter {$0.isKeyWindow}.first
@@ -447,27 +447,27 @@ func netMonitoringStopped() {
 //}
 
 func fakeAccounts() {
-//    let sPrivateKey = crypto.getPrivateKey()
-//    let sPublicK = crypto.getPublicKey()
-    // Star Wars Charater List
-    let users = ["Andy","Alex","Baz","Brian","Cat","Carol","Dick","Dan","Ed","Earl","Fred","Frank","Gavin","Grant","Henry","Hudson","India","Irene","Jack","Jude","Kelvin","Kez","Lois","Leo","Max","Mark","Nick","Noah","Pete","Piere","Quint","Roman","Ryder","Steve","Sid","Tony","Taz","Uma","Victor","Valeria","Warren","Walter","Xena","Yosef","Zoey","Zack","Zeke","Zara"]
-    var index = 0
-    for user in users {
-      let success = crypto.generateKeyPair(keySize: 2048, privateTag: "ch.cqd.WotsApp", publicTag: "ch.cqd.WotsApp")
-      if success {
-        let privateK = crypto.getPrivateKey()
-        let publicK = crypto.getPublicKey()
-        let image = UIImage(named: images[0])!
-        let imagePNG = image.pngData()!
-        let newRex = rex(id: nil, token: token, nickName: user, image: imagePNG, secret: "1234", publicK: publicK, privateK: privateK)
-        cloud.users!.rexes.append(newRex)
-        cloud.saveToPublic(user: newRex)
-        print("user ",user)
-        sleep(1)
-      }
+  //    let sPrivateKey = crypto.getPrivateKey()
+  //    let sPublicK = crypto.getPublicKey()
+  // Star Wars Charater List
+  let users = ["Andy","Alex","Baz","Brian","Cat","Carol","Dick","Dan","Ed","Earl","Fred","Frank","Gavin","Grant","Henry","Hudson","India","Irene","Jack","Jude","Kelvin","Kez","Lois","Leo","Max","Mark","Nick","Noah","Pete","Piere","Quint","Roman","Ryder","Steve","Sid","Tony","Taz","Uma","Victor","Valeria","Warren","Walter","Xena","Yosef","Zoey","Zack","Zeke","Zara"]
+  var index = 0
+  for user in users {
+    let success = crypto.generateKeyPair(keySize: 2048, privateTag: "ch.cqd.WotsApp", publicTag: "ch.cqd.WotsApp")
+    if success {
+      let privateK = crypto.getPrivateKey()
+      let publicK = crypto.getPublicKey()
+      let image = UIImage(named: images[0])!
+      let imagePNG = image.pngData()!
+      let newRex = rex(id: nil, token: token, nickName: user, image: imagePNG, secret: "1234", publicK: publicK, privateK: privateK)
+      cloud.users!.rexes.append(newRex)
+      cloud.saveToPublic(user: newRex)
+      print("user ",user)
+      sleep(1)
     }
-//    crypto.putPublicKey(publicK: sPublicK!, keySize: 2048, publicTag: "ch.cqd.WotsApp")
-//    crypto.putPrivateKey(privateK: sPrivateKey!, keySize: 2048, privateTag: "ch.cqd.WotsApp")
+  }
+  //    crypto.putPublicKey(publicK: sPublicK!, keySize: 2048, publicTag: "ch.cqd.WotsApp")
+  //    crypto.putPrivateKey(privateK: sPrivateKey!, keySize: 2048, privateTag: "ch.cqd.WotsApp")
 }
 
 
@@ -538,7 +538,7 @@ func fakeAccounts() {
 //                }
 //                })
 //                )
-          
+
 //        TextField("Secret?", text: $secret)
 //          .multilineTextAlignment(.center)
 //          .textFieldStyle(RoundedBorderTextFieldStyle())
