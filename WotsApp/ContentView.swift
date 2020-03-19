@@ -64,6 +64,9 @@ struct ContentView: View {
   
   @State var group = ""
   @State var showPopover = false
+  @State var recipients:[tags] = []
+  @State var code:String = ""
+  
   
   
   var body: some View {
@@ -124,8 +127,8 @@ struct ContentView: View {
         self.nouvelle.rexes = data!
         self.display3 = true
       }.onAppear {
-        let newCode = crypto.genCode(codes: ["F5D7CB9E","D3026DE8","4641FA46"])
-        print("newCode ",newCode)
+//        let newCode = crypto.genCode(codes: ["F5D7CB9E","D3026DE8","4641FA46"])
+//        print("newCode ",newCode)
         
 
         let network = Connect.shared
@@ -227,7 +230,6 @@ struct ContentView: View {
         Image(uiImage: image)
           .resizable()
           .frame(width: 128.0, height: 128.0)
-          // code 9
           .allowsHitTesting(true)
           .onLongPressGesture {
           cloud.searchNReturn(token,action:"return")
@@ -260,7 +262,7 @@ struct ContentView: View {
         if display4 {
           Picker(selection: $selected, label: Text("")) {
             ForEach(0 ..< self.nouvelle.rexes.count) {dix in
-              Text(self.nouvelle.rexes[dix].nickName! + " " + crypto.redact(self.nouvelle.rexes[dix].secret!))
+              Text(self.nouvelle.rexes[dix].nickName!)
             }
           }.pickerStyle(WheelPickerStyle())
             .padding()
@@ -271,28 +273,41 @@ struct ContentView: View {
 //                self.publicK = self.nouvelle.rexes[self.selected].publicK
 //                self.privateK = self.nouvelle.rexes[self.selected].privateK
 //                self.doubleToken = self.nouvelle.rexes[self.selected].token
-//                self.secret = self.nouvelle.rexes[self.selected].secret!
+                self.secret = self.nouvelle.rexes[self.selected].secret!
                 print("poke")
                 cloud.getMatchingPublicNames(nil, nickName: self.nouvelle.rexes[self.selected].nickName!)
                 
-                // fuck
+                
                 
 //                cloud.authRequest(auth: "request", name: self.sendTo, device: self.address, secret: self.secret)
               }
           }.onReceive(cloud.matchesPublisher) { ( pins ) in
-          //            WotsApp.alert()
-          //            print("self.secret ",self.secret)
+                        self.recipients = pins!
                         self.showPopover = true
                     }.popover(
                         isPresented: self.$showPopover,
                         arrowEdge: .bottom
-                    ) { Text("Popover" )
-                      TextField("Code?", text: self.$secret, onCommit: {
-                        print("Code ",self.secret)
+                    ) { Text("Popover " + self.sendTo)
+                      TextField("Code?", text: self.$code, onCommit: {
+                        self.code = crypto.md5hash(qbfString: self.code)
+                        print("Code ",self.secret,self.code)
+//                        if self.secret == self.code {
+                          let answer = self.recipients.filter { $0.kp == self.code }
+                          if answer.first != nil {
+                            print("answer ",answer.first!.token!)
+                            self.disableText = false
+                            self.address = answer.first!.token!
+                            self.publicK = answer.first!.pk!
+                            cloud.searchNUpdate(answer.first!.token!, nickName: self.sendTo)
+                          } else {
+                            self.alertMessage = "Wrong Code!"
+                          }
                       })
                         .multilineTextAlignment(.center)
                         .textFieldStyle(RoundedBorderTextFieldStyle()
                         )
+                      Text(self.alertMessage)
+                      Divider()
                       Button(action: {
                         UIApplication.shared.windows[0].rootViewController?.dismiss(animated: true, completion: {})
                         self.showPopover = false

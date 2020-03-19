@@ -24,6 +24,12 @@ import Combine
 
 // code 1
 
+struct tags {
+  var kp:String?
+  var token:String?
+  var pk:Data?
+}
+
 struct errorAlert {
   var title: String!
   var message: String!
@@ -72,7 +78,7 @@ class Storage: NSObject {
   let cloudPublisher = PassthroughSubject<String, Never>()
   let directoryPublisher = PassthroughSubject<Void, Never>()
   let returnRecordPublisher = PassthroughSubject<(String,String),Never>()
-  let matchesPublisher = PassthroughSubject<[String]?, Never>()
+  let matchesPublisher = PassthroughSubject<[tags]?, Never>()
 
   var publicDB: CKDatabase!
   var privateDB: CKDatabase!
@@ -183,10 +189,30 @@ class Storage: NSObject {
                           if action == "block" {
                             self!.updateRex3(record: results.first!)
                           }
+                          
                         }
                         }
                         
     
+  }
+  
+  func searchNUpdate(_ token:String, nickName: String) {
+    let predicate = NSPredicate(format: "token = %@", token)
+    let query = CKQuery(recordType: "directory", predicate: predicate)
+    privateDB.perform(query,
+                     inZoneWith: CKRecordZone.default().zoneID) { [weak self] results, error in
+                      guard let _ = self else { return }
+                      if let error = error {
+                        DispatchQueue.main.async { self!.errorPublisher.send(error.localizedDescription) }
+                        return
+                      }
+                      guard let results = results else { return }
+                      if results.count == 1 {
+                        self!.updateRex4(nickName: nickName, token: token, record2D: results.first?.recordID.recordName)
+                      } else {
+                        self!.updateRex4(nickName: nickName, token: token, record2D: nil)
+                      }
+                      }
   }
   
   func deleteRecords(_ recordIDs:[CKRecord.ID]) {
@@ -355,8 +381,10 @@ class Storage: NSObject {
     publicDB.add(queryOp)
   }
   
+
+  
   func getMatchingPublicNames(_ cursor: CKQueryOperation.Cursor?, nickName:String?) {
-    var knownPins:[String] = []
+    var kps:[tags] = []
     let predicate = NSPredicate(format: "nickName = %@", nickName!)
     let query = CKQuery(recordType: "directory", predicate: predicate)
     query.sortDescriptors = [NSSortDescriptor(key: "nickName", ascending: true)]
@@ -368,19 +396,22 @@ class Storage: NSObject {
       queryOp = CKQueryOperation(cursor: cursor!)
     }
     queryOp.resultsLimit = 16
-    queryOp.desiredKeys = ["secret"]
+    queryOp.desiredKeys = ["secret","token","publicK"]
     queryOp.recordFetchedBlock = { record in
-      let kpin = record.object(forKey: "secret") as? String
-      knownPins.append(kpin!)
+      let kp = record.object(forKey: "secret") as? String
+      let tk = record.object(forKey: "token") as? String
+      let pk = record.object(forKey: "publicK") as? Data
+      let tag = tags(kp: kp, token: tk, pk: pk)
+      kps.append(tag)
     }
     queryOp.queryCompletionBlock = { cursor, error in
       if cursor != nil {
         self.getPublicDirectoryV4(cursor, begins: nickName)
       } else {
-        if knownPins.isEmpty {
+        if kps.isEmpty {
           DispatchQueue.main.async { self.matchesPublisher.send(nil) }
-        } else {
-          DispatchQueue.main.async { self.matchesPublisher.send(knownPins) }
+        } else {
+          DispatchQueue.main.async { self.matchesPublisher.send(kps) }
         }
       }
     }
@@ -581,12 +612,35 @@ class Storage: NSObject {
         }
       }
     
+  func updateRex4(nickName:String, token:String, record2D:String?) {
+    var record:CKRecord!
+    if record2D != nil {
+      let recordID = CKRecord.ID(recordName: record2D!)
+      record = CKRecord(recordType: "directory", recordID: recordID)
+    } else {
+      record = CKRecord(recordType: "directory")
+    }
+    record.setValue(nickName, forKey: "nickName")
+    record.setValue(token, forKey: "token")
+    record.setValue("cestBon", forKey: "auth")
+    let saveRecordsOperation = CKModifyRecordsOperation()
     
+    saveRecordsOperation.recordsToSave = [record]
+    saveRecordsOperation.savePolicy = .allKeys
+    saveRecordsOperation.modifyRecordsCompletionBlock = { savedRecords,deletedRecordID, error in
+      if error != nil {
+        DispatchQueue.main.async { self.errorPublisher.send(error!.localizedDescription) }
+      } else {
+        print("updated4 db")
+      }
+    }
+    self.privateDB.add(saveRecordsOperation)
+  }
     
   func updateRex() {
     let record2D = UserDefaults.standard.string(forKey: "auth")
     var recordID: CKRecord.ID!
-    if record2D != "nil" {
+    if record2D != nil {
       recordID = CKRecord.ID(recordName: record2D!)
       privateDB.fetch(withRecordID: recordID,
                       completionHandler: ({record, error in
