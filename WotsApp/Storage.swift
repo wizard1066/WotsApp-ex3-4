@@ -274,6 +274,7 @@ class Storage: NSObject {
   }
   
   func getPublicDirectory() {
+    var lastName:String!
     let predicate = NSPredicate(value: true)
     let query = CKQuery(recordType: "directory", predicate: predicate)
     publicDB.perform(query,
@@ -285,11 +286,13 @@ class Storage: NSObject {
                       }
                       guard let results = results else { return }
                       for result in results {
-                          let newRex = self!.setRecord(record: result)
-                          if newRex != nil {
-                            self!.users!.rexes.append(newRex!)
-                          }
-//                        }
+                          if lastName != result.object(forKey: "nickName") as? String {
+                            let newRex = self!.setRecord(record: result)
+                            if newRex != nil {
+                              self!.users!.rexes.append(newRex!)
+                            }
+                            lastName = result.object(forKey: "nickName") as? String
+                        }
                       }
                       DispatchQueue.main.async { self!.gotPublicDirectory.send(true) }
     }

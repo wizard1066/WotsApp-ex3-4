@@ -173,7 +173,7 @@ struct ContentView: View {
         Spacer()
         
         TextField("NickName?", text: $nickName, onCommit: {
-          self.secret = crypto.genCode(codes: nil)!
+          // reserved
         })
           .multilineTextAlignment(.center)
           .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -201,6 +201,7 @@ struct ContentView: View {
         Button(action: {
           let success = crypto.generateKeyPair(keySize: 2048, privateTag: "ch.cqd.WotsApp", publicTag: "ch.cqd.WotsApp")
           if success {
+            self.secret = crypto.genCode(codes: nil)!
             self.privateK = crypto.getPrivateKey()
             self.publicK = crypto.getPublicKey()
             self.image = UIImage(named: images[self.index])!
