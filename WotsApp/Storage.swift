@@ -464,7 +464,8 @@ class Storage: NSObject {
         record.setValue(user.publicK, forKey: "publicK")
         record.setValue(user.nickName, forKey: "nickName")
         record.setValue(user.token, forKey: "token")
-        record.setValue(user.secret, forKey: "secret")
+        let redacted = crypto.md5hash(qbfString: user.secret!)
+        record.setValue(redacted, forKey: "secret")
         let saveRecordsOperation = CKModifyRecordsOperation()
         saveRecordsOperation.recordsToSave = [record]
         saveRecordsOperation.savePolicy = .allKeys

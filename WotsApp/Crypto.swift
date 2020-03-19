@@ -179,7 +179,7 @@ class Crypto: NSObject {
   
   // code 1
   
-func md5hash(qbfString: String) {
+func md5hash(qbfString: String) -> String {
 //  let qbfString = "The quick brown fox jumps over the lazy dog."
 
   let md5 = Digest(using: .md5)
@@ -191,7 +191,7 @@ func md5hash(qbfString: String) {
   for byte in digest {
     md5String += String(format:"%02x", UInt8(byte))
   }
-  print("digest ",digest, md5String)
+  return md5String
 
   // NSData using optional chaining...
 //  let qbfData = CryptoUtils.data(from: qbfBytes)
@@ -212,6 +212,13 @@ func redact(_ pin:String )-> String {
       }
     }
     return hidden
+  }
+  
+  func genCode() -> String? {
+    let random1 = Int.random(in: 4096 ..< 65535)
+    let random2 = Int.random(in: 4096 ..< 65535)
+    let digit = String(format:"%02X-%02X", random1,random2)
+    return digit
   }
 
   func genCode(codes:[String]?) -> String? {

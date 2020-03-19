@@ -63,6 +63,7 @@ struct ContentView: View {
   @State var publicLink = ""
   
   @State var group = ""
+  @State var showPopover = false
   
   
   var body: some View {
@@ -107,7 +108,7 @@ struct ContentView: View {
           crypto.savePrivateKey()
           UserDefaults.standard.set(self.secret, forKey: "secret")
           cloud.getPublicDirectory()
-          crypto.md5hash(qbfString: "The quick brown fox jumps over the lazy dog.")
+//          crypto.md5hash(qbfString: "The quick brown fox jumps over the lazy dog.")
         } else {
 //          cloud.getPublicDirectory()
           self.display2 = true
@@ -169,28 +170,12 @@ struct ContentView: View {
         Spacer()
         
         TextField("NickName?", text: $nickName, onCommit: {
-          cloud.getMatchingPublicNames(nil, nickName: "Zack")
+          self.secret = crypto.genCode(codes: nil)!
         })
           .multilineTextAlignment(.center)
           .textFieldStyle(RoundedBorderTextFieldStyle())
           .disabled(nickName.count > 15)
-          .onReceive(cloud.matchesPublisher) { ( pins ) in
-          // if pins is nil returns a new code
-            self.secret = crypto.genCode(codes: pins)!
-            print("self.secret ",self.secret)
-          }
-//          .simultaneousGesture(LongPressGesture()
-//            .onEnded({bool in
-//                if bool {
-//                  print("Long!")
-//                }
-//                })
-//                )
           
-//        TextField("Secret?", text: $secret)
-//          .multilineTextAlignment(.center)
-//          .textFieldStyle(RoundedBorderTextFieldStyle())
-//          .disabled(secret.count > 15)
         TextField("Group?", text: $group, onEditingChanged: {_ in
           if self.group.first == "a" {
             self.group = "b"
@@ -282,14 +267,43 @@ struct ContentView: View {
             .onTapGesture {
               if self.nouvelle.rexes.count > 0 {
                 self.sendTo = self.nouvelle.rexes[self.selected].nickName!
-                self.address = self.nouvelle.rexes[self.selected].token!
-                self.publicK = self.nouvelle.rexes[self.selected].publicK
-                self.privateK = self.nouvelle.rexes[self.selected].privateK
-                self.doubleToken = self.nouvelle.rexes[self.selected].token
-                self.secret = self.nouvelle.rexes[self.selected].secret!
-                cloud.authRequest(auth: "request", name: self.sendTo, device: self.address, secret: self.secret)
+//                self.address = self.nouvelle.rexes[self.selected].token!
+//                self.publicK = self.nouvelle.rexes[self.selected].publicK
+//                self.privateK = self.nouvelle.rexes[self.selected].privateK
+//                self.doubleToken = self.nouvelle.rexes[self.selected].token
+//                self.secret = self.nouvelle.rexes[self.selected].secret!
+                print("poke")
+                cloud.getMatchingPublicNames(nil, nickName: self.nouvelle.rexes[self.selected].nickName!)
+                
+                // fuck
+                
+//                cloud.authRequest(auth: "request", name: self.sendTo, device: self.address, secret: self.secret)
               }
-          }.onReceive(popUpPublisher, perform: { ( code ) in
+          }.onReceive(cloud.matchesPublisher) { ( pins ) in
+          //            WotsApp.alert()
+          //            print("self.secret ",self.secret)
+                        self.showPopover = true
+                    }.popover(
+                        isPresented: self.$showPopover,
+                        arrowEdge: .bottom
+                    ) { Text("Popover" )
+                      TextField("Code?", text: self.$secret, onCommit: {
+                        print("Code ",self.secret)
+                      })
+                        .multilineTextAlignment(.center)
+                        .textFieldStyle(RoundedBorderTextFieldStyle()
+                        )
+                      Button(action: {
+                        UIApplication.shared.windows[0].rootViewController?.dismiss(animated: true, completion: {})
+                        self.showPopover = false
+                      }) {
+                        Text("Dismiss")
+                      }
+                    }
+          
+          
+          
+          .onReceive(popUpPublisher, perform: { ( code ) in
             self.disableText = true
             self.secret = code
             let alertHC = UIHostingController(rootView: PopUp(code: self.$secret, input: ""))
@@ -329,7 +343,34 @@ struct ContentView: View {
   }
 }
 
+private func alert() {
+    let alert = UIAlertController(title: "Code Match", message: "Give me his shared PIN", preferredStyle: .alert)
+    alert.addTextField() { textField in
+        textField.placeholder = "Enter some text"
+    }
+    alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in })
+    showAlert(alert: alert)
+}
 
+func showAlert(alert: UIAlertController) {
+    if let controller = topMostViewController() {
+        controller.present(alert, animated: true)
+    }
+}
+
+private func topMostViewController() -> UIViewController? {
+    guard let rootController = keyWindow()?.rootViewController else {
+        return nil
+    }
+    return rootController
+}
+
+private func keyWindow() -> UIWindow? {
+    return UIApplication.shared.connectedScenes
+    .filter {$0.activationState == .foregroundActive}
+    .compactMap {$0 as? UIWindowScene}
+    .first?.windows.filter {$0.isKeyWindow}.first
+}
 
 #if DEBUG
 struct ContentView_Previews: PreviewProvider {
@@ -484,3 +525,15 @@ func fakeAccounts() {
 //        }
 //        print(sex.joined())
 //        }
+//          .simultaneousGesture(LongPressGesture()
+//            .onEnded({bool in
+//                if bool {
+//                  print("Long!")
+//                }
+//                })
+//                )
+          
+//        TextField("Secret?", text: $secret)
+//          .multilineTextAlignment(.center)
+//          .textFieldStyle(RoundedBorderTextFieldStyle())
+//          .disabled(secret.count > 15)
