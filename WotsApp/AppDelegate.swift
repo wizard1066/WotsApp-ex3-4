@@ -86,6 +86,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     if request == "block" {
       cloud.saveBlockedTokenToSharedmemory(token2B: device!)
     }
+    
+    if request == "unblock" {
+      cloud.searchNReturn(token, action: "unblock")
+      cloud.saveUnblockedTokenToSharedmemory(token2U: device!)
+    }
 
     completionHandler(.newData)
   }

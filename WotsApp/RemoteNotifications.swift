@@ -71,6 +71,11 @@ class RemoteNotifications: NSObject, URLSessionDelegate {
     return(jsonObjects.count - 1)
   }
   
+  func unblockMessage(device: String) -> Int {
+    jsonObjects.append(["aps":["content-available":1,"category":"wotsapp2","device":token,"request":"unblock"]])
+    return(jsonObjects.count - 1)
+  }
+  
   func postNotification(type: String, jsonID: Int, token:String) {
     let valid = JSONSerialization.isValidJSONObject(jsonObjects[jsonID])
     print("valid ",valid)

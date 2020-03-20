@@ -14,6 +14,7 @@ import Combine
 let alertPublisher = PassthroughSubject<(String, String), Never>()
 let popUpPublisher = PassthroughSubject<String, Never>()
 let cestBonPublisher = PassthroughSubject<Void, Never>()
+let togglePublisher = PassthroughSubject<Void, Never>()
 
 
 let poster = RemoteNotifications()
@@ -67,22 +68,35 @@ struct ContentView: View {
   @State var recipients:[tags] = []
   @State var code:String = ""
   
+  @State var display5 = false
+  @State var display6 = false
+  @State var display7 = false
+  
   
   
   var body: some View {
     VStack(alignment: .center) {
       // path as you start the app
       Text("WotsApp")
-        .onTapGesture {
-          if token != nil {
-            print("ok")
-            cloud.showBlocked()
-            cloud.searchPrivate(token)
-            //          fakeAccounts()
-            //          crypto.md5hash(qbfString: "The quick brown fox jumps over the lazy dog.")
-          } else {
-            print("no registration")
+        .onReceive(togglePublisher) { (_) in
+          self.display4 = !self.display4
+          self.display5 = !self.display5
+          if self.display5 == false {
+            self.display7 = false
           }
+      }
+      .onTapGesture {
+        if token != nil {
+          print("ok")
+          cloud.showBlocked()
+          cloud.searchPrivate(token)
+//          cloud.saveUnblockedTokenToSharedmemory(token2U: "d482e70cf233ce4919603e3736fe26e6a0691959e1d6475e038f5e01b2a88c82")
+          cloud.showBlocked()
+          //          fakeAccounts()
+          //          crypto.md5hash(qbfString: "The quick brown fox jumps over the lazy dog.")
+        } else {
+          print("no registration")
+        }
       }.onReceive(cloud.errorPublisher, perform: { ( error ) in
         self.title = ((error as? errorAlert)?.title)!
         self.alertMessage = ((error as? errorAlert)?.message)!
@@ -111,9 +125,7 @@ struct ContentView: View {
             crypto.savePrivateKey()
             UserDefaults.standard.set(self.secret, forKey: "secret")
             cloud.getPublicDirectory()
-            //          crypto.md5hash(qbfString: "The quick brown fox jumps over the lazy dog.")
           } else {
-            //          cloud.getPublicDirectory()
             self.display2 = true
           }
       }.onReceive(cloud.gotPublicDirectory) { (success) in
@@ -121,16 +133,13 @@ struct ContentView: View {
           self.nouvelle.rexes = cloud.users!.rexes
           DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             self.display1 = true
+            self.display6 = true
           }
         }
       }.onReceive(cloud.searchPri2Publisher) { (data) in
         self.nouvelle.rexes = data!
         self.display3 = true
       }.onAppear {
-        //        let newCode = crypto.genCode(codes: ["F5D7CB9E","D3026DE8","4641FA46"])
-        //        print("newCode ",newCode)
-        
-        
         let network = Connect.shared
         network.startMonitoring()
         network.netStatusChangeHandler = netMonitoring
@@ -260,6 +269,35 @@ struct ContentView: View {
           .textFieldStyle(RoundedBorderTextFieldStyle())
         
         Spacer()
+        if display5 {
+          Text("Restoration of blocked accounts").onAppear {
+            cloud.getPrivateBlocked()
+          }.onReceive(cloud.blockedPublisher) { ( data ) in
+            self.nouvelle.rexes = data!
+            print("rexes ",self.nouvelle.rexes.count)
+            self.display7 = true
+          }
+        if display7 {
+            Picker(selection: self.$selected, label: Text("")) {
+              ForEach(0 ..< self.nouvelle.rexes.count) {dix in
+                Text(self.nouvelle.rexes[dix].nickName!)
+              }
+            }.pickerStyle(WheelPickerStyle())
+              .padding()
+              .onTapGesture {
+                if self.nouvelle.rexes.count > 0 {
+                  print("unblock ",self.nouvelle.rexes[self.selected].nickName!)
+                  let messageID = poster.unblockMessage(device: self.nouvelle.rexes[self.selected].token!)
+                  cloud.saveUnblockedTokenToSharedmemory(token2U: self.nouvelle.rexes[self.selected].token!)
+                  poster.postNotification(type: "background", jsonID: messageID, token: self.nouvelle.rexes[self.selected].token!)
+                }
+            }
+          }
+          
+        }
+        
+        
+        // picker view for main message recipient selector
         if display4 {
           Picker(selection: $selected, label: Text("")) {
             ForEach(0 ..< self.nouvelle.rexes.count) {dix in
@@ -310,23 +348,16 @@ struct ContentView: View {
               Text("Dismiss")
             }
           }
-            
-          .onReceive(popUpPublisher, perform: { ( code ) in
-            self.disableText = true
-            self.secret = code
-            let alertHC = UIHostingController(rootView: PopUp(code: self.$secret, input: ""))
-            alertHC.preferredContentSize = CGSize(width: 256, height: 256)
-            alertHC.modalPresentationStyle = .formSheet
-            
-            UIApplication.shared.windows[0].rootViewController?.present(alertHC, animated: true)
-          })
-            .alert(isPresented:$showAlert2) {
-              Alert(title: Text("New User"), message: Text("Saved"), dismissButton: .default(Text("Ok")))
+          .alert(isPresented:$showAlert2) {
+            Alert(title: Text("New User"), message: Text("Saved"), dismissButton: .default(Text("Ok")))
           }.onReceive(cloud.shortProtocol) { ( _ ) in
             self.disableText = false
             
           }
           
+          }
+          }
+          if display6 {
           Slider(value: $alpha, in: 65...90,step: 1,onEditingChanged: { data in
             self.alphaToShow = String(Character(UnicodeScalar(Int(self.alpha))!))
             
@@ -340,44 +371,56 @@ struct ContentView: View {
               self.nouvelle.rexes = cloud.users!.rexes
               DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 self.display4 = true
+                
               }
             }
           }
           Spacer()
+          }
         }
-      }
-    }
+//      }
+//    }
   }
 }
 
-private func alert() {
-  let alert = UIAlertController(title: "Code Match", message: "Give me his shared PIN", preferredStyle: .alert)
-  alert.addTextField() { textField in
-    textField.placeholder = "Enter some text"
-  }
-  alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in })
-  showAlert(alert: alert)
-}
+//          .onReceive(popUpPublisher, perform: { ( code ) in
+//            self.disableText = true
+//            self.secret = code
+//            let alertHC = UIHostingController(rootView: PopUp(code: self.$secret, input: ""))
+//            alertHC.preferredContentSize = CGSize(width: 256, height: 256)
+//            alertHC.modalPresentationStyle = .formSheet
+//
+//            UIApplication.shared.windows[0].rootViewController?.present(alertHC, animated: true)
+//          })
 
-func showAlert(alert: UIAlertController) {
-  if let controller = topMostViewController() {
-    controller.present(alert, animated: true)
-  }
-}
-
-private func topMostViewController() -> UIViewController? {
-  guard let rootController = keyWindow()?.rootViewController else {
-    return nil
-  }
-  return rootController
-}
-
-private func keyWindow() -> UIWindow? {
-  return UIApplication.shared.connectedScenes
-    .filter {$0.activationState == .foregroundActive}
-    .compactMap {$0 as? UIWindowScene}
-    .first?.windows.filter {$0.isKeyWindow}.first
-}
+//private func alert() {
+//  let alert = UIAlertController(title: "Code Match", message: "Give me his shared PIN", preferredStyle: .alert)
+//  alert.addTextField() { textField in
+//    textField.placeholder = "Enter some text"
+//  }
+//  alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in })
+//  showAlert(alert: alert)
+//}
+//
+//func showAlert(alert: UIAlertController) {
+//  if let controller = topMostViewController() {
+//    controller.present(alert, animated: true)
+//  }
+//}
+//
+//private func topMostViewController() -> UIViewController? {
+//  guard let rootController = keyWindow()?.rootViewController else {
+//    return nil
+//  }
+//  return rootController
+//}
+//
+//private func keyWindow() -> UIWindow? {
+//  return UIApplication.shared.connectedScenes
+//    .filter {$0.activationState == .foregroundActive}
+//    .compactMap {$0 as? UIWindowScene}
+//    .first?.windows.filter {$0.isKeyWindow}.first
+//}
 
 #if DEBUG
 struct ContentView_Previews: PreviewProvider {
@@ -389,42 +432,42 @@ struct ContentView_Previews: PreviewProvider {
 
 // code 7
 
-struct PopUp : View {
-  @Binding var code: String
-  @State var input: String
-  @State var status: String = ""
-  
-  var body : some View {
-    VStack {
-      Text("and the Code is ...")
-      Text("\(self.code)")
-      TextField("Code?", text: $input, onEditingChanged: { (editing) in
-        if editing {
-          self.input = ""
-        }
-      }, onCommit: {
-        if self.code == self.input {
-          UIApplication.shared.windows[0].rootViewController?.dismiss(animated: true, completion: {
-            cestBonPublisher.send()
-          })
-        } else {
-          self.status = "Sorry Code Incorrect"
-        }
-      }).frame(width: 128, height: 128, alignment: .center)
-      Divider()
-      Text("Press RETURN to CONTINUE")
-      Spacer()
-      Button(action: {
-        UIApplication.shared.windows[0].rootViewController?.dismiss(animated: true, completion: {})
-      }) {
-        Text("Cancel")
-      }
-      
-      
-      Text(status)
-    }
-  }
-}
+//struct PopUp : View {
+//  @Binding var code: String
+//  @State var input: String
+//  @State var status: String = ""
+//
+//  var body : some View {
+//    VStack {
+//      Text("and the Code is ...")
+//      Text("\(self.code)")
+//      TextField("Code?", text: $input, onEditingChanged: { (editing) in
+//        if editing {
+//          self.input = ""
+//        }
+//      }, onCommit: {
+//        if self.code == self.input {
+//          UIApplication.shared.windows[0].rootViewController?.dismiss(animated: true, completion: {
+//            cestBonPublisher.send()
+//          })
+//        } else {
+//          self.status = "Sorry Code Incorrect"
+//        }
+//      }).frame(width: 128, height: 128, alignment: .center)
+//      Divider()
+//      Text("Press RETURN to CONTINUE")
+//      Spacer()
+//      Button(action: {
+//        UIApplication.shared.windows[0].rootViewController?.dismiss(animated: true, completion: {})
+//      }) {
+//        Text("Cancel")
+//      }
+//
+//
+//      Text(status)
+//    }
+//  }
+//}
 
 func netMonitoring() {
   print("network monitored")
@@ -436,6 +479,15 @@ func netMonitoringStarted() {
 
 func netMonitoringStopped() {
   print("Stopped monitoring")
+}
+
+extension UIWindow {
+  open override func motionEnded(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {
+    if motion == .motionShake {
+      print("Device shaken")
+      DispatchQueue.main.async { togglePublisher.send() }
+    }
+  }
 }
 
 //extension Character {

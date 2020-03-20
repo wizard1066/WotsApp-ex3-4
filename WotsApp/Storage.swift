@@ -80,6 +80,7 @@ class Storage: NSObject {
   let directoryPublisher = PassthroughSubject<Void, Never>()
   let returnRecordPublisher = PassthroughSubject<(String,String),Never>()
   let matchesPublisher = PassthroughSubject<[tags]?, Never>()
+  let blockedPublisher = PassthroughSubject<[rex]?, Never>()
 
   var publicDB: CKDatabase!
   var privateDB: CKDatabase!
@@ -189,6 +190,10 @@ class Storage: NSObject {
                           }
                           if action == "block" {
                             self!.updateRex3(record: results.first!)
+                          }
+                          
+                          if action == "unblock" {
+                            self!.updateRex5(record: results.first!)
                           }
                           
                         }
@@ -315,6 +320,30 @@ class Storage: NSObject {
                             self!.users!.rexes.append(newRex!)
                           }
                       }
+    }
+  }
+  
+  func getPrivateBlocked() {
+//    let predicate = NSPredicate(format: "block = %@","oui")
+    users!.rexes.removeAll()
+    let predicate = NSPredicate(value: true)
+    let query = CKQuery(recordType: "directory", predicate: predicate)
+    privateDB.perform(query,
+                     inZoneWith: CKRecordZone.default().zoneID) { [weak self] results, error in
+                      guard let _ = self else { return }
+                      if let error = error {
+                        DispatchQueue.main.async { self!.errorPublisher.send(error.localizedDescription) }
+                        return
+                      }
+                      guard let results = results else { return }
+                      for result in results {
+                          print("result ",result)
+                          let name = result.object(forKey: "nickName") as? String
+                          let device = result.object(forKey: "token") as? String
+                          let newRex = rex(id: result.recordID, token: device, nickName: name, image: nil, secret: nil, publicK: nil, privateK: nil)
+                          self!.users!.rexes.append(newRex)
+                      }
+                      DispatchQueue.main.async { self!.blockedPublisher.send(self!.users!.rexes) }
     }
   }
   
@@ -511,6 +540,7 @@ class Storage: NSObject {
         saveRecordsOperation.savePolicy = .allKeys
         saveRecordsOperation.modifyRecordsCompletionBlock = { savedRecords,deletedRecordID, error in
           if error != nil {
+            print("error ",error)
             DispatchQueue.main.async { self.errorPublisher.send(error!.localizedDescription) }
           } else {
             
@@ -541,6 +571,7 @@ class Storage: NSObject {
         saveRecordsOperation.savePolicy = .allKeys
         saveRecordsOperation.modifyRecordsCompletionBlock = { savedRecords,deletedRecordID, error in
           if error != nil {
+            print("error ",error)
             DispatchQueue.main.async { self.errorPublisher.send(error!.localizedDescription) }
           } else {
             
@@ -699,8 +730,27 @@ class Storage: NSObject {
           if error != nil {
             DispatchQueue.main.async { self.errorPublisher.send(error!.localizedDescription) }
           } else {
-            let tokenToBlock = record.object(forKey:"token") as? String
-            self.saveBlockedTokenToSharedmemory(token2B: tokenToBlock!)
+//            let tokenToBlock = record.object(forKey:"token") as? String
+//            self.saveBlockedTokenToSharedmemory(token2B: tokenToBlock!)
+            print("updated db")
+          }
+        }
+        self.privateDB.add(saveRecordsOperation)
+    }
+    
+    func updateRex5(record: CKRecord) {
+        record.setValue("", forKey: "block")
+        let saveRecordsOperation = CKModifyRecordsOperation()
+        
+        saveRecordsOperation.recordsToSave = [record]
+        saveRecordsOperation.savePolicy = .allKeys
+        saveRecordsOperation.modifyRecordsCompletionBlock = { savedRecords,deletedRecordID, error in
+          if error != nil {
+            print("error ",error)
+            DispatchQueue.main.async { self.errorPublisher.send(error!.localizedDescription) }
+          } else {
+            let tokenToUnblock = record.object(forKey:"token") as? String
+            self.saveUnblockedTokenToSharedmemory(token2U: tokenToUnblock!)
             print("updated db")
           }
         }
@@ -715,6 +765,19 @@ class Storage: NSObject {
         defaults?.set(tokensBlocked, forKey: "block")
       } else {
         defaults?.set([token2B], forKey: "block")
+      }
+    }
+    
+    func saveUnblockedTokenToSharedmemory(token2U: String) {
+      let defaults = UserDefaults.init(suiteName: "group.ch.cqd.WotsApp")
+      let tokensBlocked = defaults?.array(forKey: "block")
+      if var tokensBlocked = tokensBlocked as? [String] {
+        print("token2U ",token2U)
+        let token2Unblock = tokensBlocked.firstIndex(of: token2U)
+        if token2Unblock != nil {
+          tokensBlocked.remove(at: token2Unblock!)
+          defaults?.set(tokensBlocked, forKey: "block")
+        }
       }
     }
     
