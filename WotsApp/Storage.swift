@@ -730,8 +730,8 @@ class Storage: NSObject {
           if error != nil {
             DispatchQueue.main.async { self.errorPublisher.send(error!.localizedDescription) }
           } else {
-//            let tokenToBlock = record.object(forKey:"token") as? String
-//            self.saveBlockedTokenToSharedmemory(token2B: tokenToBlock!)
+            let tokenToBlock = record.object(forKey:"token") as? String
+            self.saveBlockedTokenToSharedmemory(token2B: tokenToBlock!)
             print("updated db")
           }
         }
@@ -773,11 +773,14 @@ class Storage: NSObject {
       let tokensBlocked = defaults?.array(forKey: "block")
       if var tokensBlocked = tokensBlocked as? [String] {
         print("token2U ",token2U)
-        let token2Unblock = tokensBlocked.firstIndex(of: token2U)
+        var token2Unblock:Int?
+        repeat {
+        token2Unblock = tokensBlocked.firstIndex(of: token2U)
         if token2Unblock != nil {
           tokensBlocked.remove(at: token2Unblock!)
           defaults?.set(tokensBlocked, forKey: "block")
         }
+        } while token2Unblock != nil
       }
     }
     
@@ -804,6 +807,30 @@ class Storage: NSObject {
         print("blocked ",token)
       }
     }
+  }
+  
+  func saveLocalAuthCopy(token2S:String) {
+    let defaults = UserDefaults.init(suiteName: "group.ch.cqd.WotsApp")
+    let tokensAuthorised = defaults?.array(forKey: "authenticated")
+    if var tokensAuthorised = tokensAuthorised as? [String] {
+      tokensAuthorised.append(token2S)
+      defaults?.set(tokensAuthorised, forKey: "authenticated")
+    } else {
+      defaults?.set(tokensAuthorised, forKey: "authenticated")
+    }
+  }
+  
+  func tokenIsAuthorized(token2T: String) -> Bool {
+    let defaults = UserDefaults.init(suiteName: "group.ch.cqd.WotsApp")
+    let tokensAuthorised = defaults?.array(forKey: "authenticated")
+    
+    if tokensAuthorised != nil {
+      let escape = (tokensAuthorised as! [String]).contains(token2T)
+      if escape {
+        return(true)
+      }
+    }
+    return false
   }
 }
 

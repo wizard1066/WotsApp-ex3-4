@@ -83,6 +83,8 @@ struct ContentView: View {
           self.display5 = !self.display5
           if self.display5 == false {
             self.display7 = false
+          } else {
+            self.display7 = true
           }
       }
       .onTapGesture {
@@ -92,6 +94,7 @@ struct ContentView: View {
           cloud.searchPrivate(token)
 //          cloud.saveUnblockedTokenToSharedmemory(token2U: "d482e70cf233ce4919603e3736fe26e6a0691959e1d6475e038f5e01b2a88c82")
           cloud.showBlocked()
+//          cloud.saveUnblockedTokenToSharedmemory(token2U: "b158b362199d0fd575cd6d5b99280be166b7692271e04448091d76b8b91f1346")
           //          fakeAccounts()
           //          crypto.md5hash(qbfString: "The quick brown fox jumps over the lazy dog.")
         } else {
@@ -312,7 +315,7 @@ struct ContentView: View {
               }
           }.onReceive(cloud.matchesPublisher) { ( pins ) in
             self.recipients = pins!
-            if (self.recipients.count == 1 && self.recipients.first?.auth == "cestBon") {
+            if (self.recipients.count == 1 && cloud.tokenIsAuthorized(token2T: (self.recipients.first?.token!)!)) {
               self.disableText = false
               self.address = (self.recipients.first?.token!)!
               self.publicK = self.recipients.first?.pk!
@@ -331,7 +334,8 @@ struct ContentView: View {
                 self.disableText = false
                 self.address = answer.first!.token!
                 self.publicK = answer.first!.pk!
-                cloud.searchNUpdate(answer.first!.token!, nickName: self.sendTo)
+//                cloud.searchNUpdate(answer.first!.token!, nickName: self.sendTo)
+                  cloud.saveLocalAuthCopy(token2S: self.address)
               } else {
                 self.alertMessage = "Wrong Code!"
               }
